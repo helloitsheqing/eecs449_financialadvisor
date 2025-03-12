@@ -1,1 +1,2 @@
-# eecs449-sample
+# EECS449 Financial Advisor
+Repo for financial advisor. 
