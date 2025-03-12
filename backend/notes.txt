@@ -1,0 +1,9 @@
+To run ollama:
+ollama serve
+
+To run flask (activate virtual env first):
+python3 app.py
+
+To run React:
+npm start
+
