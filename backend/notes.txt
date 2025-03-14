@@ -7,3 +7,5 @@ python3 app.py
 To run React:
 npm start
 
+For Alpha Vantage API, use API_KEY = "KG3ZLRT5GE36V2L8"
+Set as os.env variable
