@@ -1,7 +1,9 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect, url_for, render_template, session
 from flask_cors import CORS
 import requests
 import os
+from authlib.integrations.flask_client import OAuth
+from dotenv import load_dotenv
 
 from langchain import hub
 from langchain_ollama import OllamaLLM
@@ -16,17 +18,73 @@ warnings.filterwarnings("ignore", category=UserWarning, message="API key must be
 
 
 # Load environment variables for API Keys
-from dotenv import load_dotenv
-load_dotenv()
+load_dotenv('backend_env.env')
 
 app = Flask(__name__)
 CORS(app) # Make sure to enable CORS!
+app.secret_key = os.getenv('SECRET_KEY')
 
 # Ollama API endpoint
 OLLAMA_API_URL = "http://localhost:11434/api/generate"
 
 # Model for Agent
 AGENT_MODEL = "deepseek-r1:1.5b"
+
+ALLOWED_CALLBACK_URL = "http://localhost:5001/callback"
+ALLOWED_LOGOUT_URL = "http://localhost:5001"
+
+
+# Auth0 configuration
+oauth = OAuth(app)
+auth0 = oauth.register(
+    "auth0",
+    client_id=os.environ.get("AUTH0_CLIENT_ID"),
+    client_secret=os.environ.get("AUTH0_CLIENT_SECRET"),
+    client_kwargs={
+        "scope": "openid profile email",
+    },
+    server_metadata_url=f'https://{os.environ.get("AUTH0_DOMAIN")}/.well-known/openid-configuration',
+    api_base_url=f"https://{os.getenv('AUTH0_DOMAIN')}",
+    access_token_url=f"https://{os.getenv('AUTH0_DOMAIN')}/oauth/token",
+    authorize_url=f"https://{os.getenv('AUTH0_DOMAIN')}/authorize",
+)
+
+# testing
+@app.route('/test-session')
+def test_session():
+    session['test'] = 'This is a test'
+    return session.get('test', 'Session not working')
+
+
+# home
+@app.route('/')
+def home():
+    return render_template('home.html', session=session.get('user'))
+
+
+# login
+@app.route('/login')
+def login():
+    return auth0.authorize_redirect(redirect_uri=os.getenv('AUTH0_CALLBACK_URL'))
+
+
+# callback
+@app.route('/callback')
+def callback():
+    token = auth0.authorize_access_token(redirect_uri="http://localhost:5001/callback")  # this is failing
+    userinfo = auth0.get('userinfo').json()
+    session['user'] = userinfo
+    return redirect('/')
+
+# logout
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(
+        f"https://{os.getenv('AUTH0_DOMAIN')}/v2/logout?"
+        f"client_id={os.getenv('AUTH0_CLIENT_ID')}&"
+        f"returnTo={url_for('home', _external=True)}"
+    )
 
 
 # Function Wrappers for external APIs
@@ -50,6 +108,7 @@ def get_stock_price(symbol: str) -> str:
     else:
         return "Error fetching stock price."
 
+
 # Create Langchain tools for external APIs to be fed into the Agent 
 api_tools = [
     Tool(
@@ -58,6 +117,7 @@ api_tools = [
         description="To fetch price for a particular stock."
     )
 ]
+
 
 # Initialise Ollama LLM and add memory to the Agent
 llm = OllamaLLM(model=AGENT_MODEL)
