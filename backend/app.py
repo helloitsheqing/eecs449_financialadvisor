@@ -12,6 +12,8 @@ from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain.agents import AgentExecutor, create_react_agent
 from langchain_core.runnables.history import RunnableWithMessageHistory
 
+import pdbp
+
 # Not using LangSmith: Suppress warnings
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning, message="API key must be provided when using hosted LangSmith API")
@@ -36,7 +38,7 @@ ALLOWED_LOGOUT_URL = "http://localhost:5001"
 
 # Auth0 configuration
 oauth = OAuth(app)
-auth0 = oauth.register(
+oauth.register(
     "auth0",
     client_id=os.environ.get("AUTH0_CLIENT_ID"),
     client_secret=os.environ.get("AUTH0_CLIENT_SECRET"),
@@ -59,21 +61,24 @@ def test_session():
 # home
 @app.route('/')
 def home():
+    # breakpoint()
     return render_template('home.html', session=session.get('user'))
 
 
 # login
 @app.route('/login')
 def login():
-    return auth0.authorize_redirect(redirect_uri=os.getenv('AUTH0_CALLBACK_URL'))
+    session.clear()
+    return oauth.auth0.authorize_redirect(redirect_uri=os.getenv('AUTH0_CALLBACK_URL'))
 
 
 # callback
 @app.route('/callback')
 def callback():
-    token = auth0.authorize_access_token(redirect_uri="http://localhost:5001/callback")  # this is failing
-    userinfo = auth0.get('userinfo').json()
-    session['user'] = userinfo
+    # breakpoint()
+    token = oauth.auth0.authorize_access_token(redirect_uri="http://localhost:5001/callback")  # this is failing
+    # userinfo = oauth.auth0.get('userinfo').json()
+    session['user'] = token
     return redirect('/')
 
 # logout
