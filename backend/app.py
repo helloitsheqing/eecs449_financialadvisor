@@ -4,6 +4,8 @@ import requests
 import os
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
+import json
+import uuid
 
 from langchain import hub
 from langchain_ollama import OllamaLLM
@@ -23,8 +25,9 @@ warnings.filterwarnings("ignore", category=UserWarning, message="API key must be
 load_dotenv('backend_env.env')
 
 app = Flask(__name__)
-CORS(app) # Make sure to enable CORS!
+CORS(app, supports_credentials=True) # Make sure to enable CORS!
 app.secret_key = os.getenv('SECRET_KEY')
+# app.secret_key = uuid.uuid4().hex
 
 # Ollama API endpoint
 OLLAMA_API_URL = "http://localhost:11434/api/generate"
@@ -55,6 +58,7 @@ oauth.register(
 @app.route('/test-session')
 def test_session():
     session['test'] = 'This is a test'
+    print("session: ", session)
     return session.get('test', 'Session not working')
 
 
@@ -62,7 +66,9 @@ def test_session():
 @app.route('/')
 def home():
     # breakpoint()
-    return render_template('home.html', session=session.get('user'))
+    return render_template('home.html', 
+                           session=session.get('user'), 
+                           pretty=json.dumps(session.get("user"), indent=4))
 
 
 # login
@@ -75,11 +81,12 @@ def login():
 # callback
 @app.route('/callback')
 def callback():
-    # breakpoint()
-    token = oauth.auth0.authorize_access_token(redirect_uri="http://localhost:5001/callback")  # this is failing
+    breakpoint()
+    token = oauth.auth0.authorize_access_token(redirect_uri=os.getenv('AUTH0_CALLBACK_URL'))  # this is failing
     # userinfo = oauth.auth0.get('userinfo').json()
     session['user'] = token
     return redirect('/')
+
 
 # logout
 @app.route('/logout')
@@ -88,7 +95,8 @@ def logout():
     return redirect(
         f"https://{os.getenv('AUTH0_DOMAIN')}/v2/logout?"
         f"client_id={os.getenv('AUTH0_CLIENT_ID')}&"
-        f"returnTo={url_for('home', _external=True)}"
+        f"returnTo={url_for('home', _external=True)}&"
+        f"federated"
     )
 
 
