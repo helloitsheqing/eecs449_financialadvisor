@@ -14,7 +14,7 @@ from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain.agents import AgentExecutor, create_react_agent
 from langchain_core.runnables.history import RunnableWithMessageHistory
 
-import pdbp
+# import pdbp
 
 # Not using LangSmith: Suppress warnings
 import warnings
@@ -81,7 +81,11 @@ def login():
 # callback
 @app.route('/callback')
 def callback():
-    breakpoint()
+    # breakpoint()
+    # session handling could be off, because when debugging, printing the session has a lot of states, dk if that's right
+    # the root issue is that the state before != state after callback (before this line is called)
+    # so when this line is ran, that's when everything crashes
+    # could be an issue stemming from apis getting mixed up
     token = oauth.auth0.authorize_access_token(redirect_uri=os.getenv('AUTH0_CALLBACK_URL'))  # this is failing
     # userinfo = oauth.auth0.get('userinfo').json()
     session['user'] = token
