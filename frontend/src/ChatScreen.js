@@ -64,7 +64,6 @@ const ChatPage = () => {
                     Send
                 </button>
             </div>
-            <Link to="/infobank" style={styles.link}>Go to Info Bank</Link>
         </div>
     );
 };
