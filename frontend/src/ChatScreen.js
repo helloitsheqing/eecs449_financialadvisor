@@ -16,7 +16,7 @@ const ChatPage = () => {
             setInputValue('');
 
             try {
-                const response = await axios.post('http://localhost:5000/chat', {
+                const response = await axios.post('http://localhost:5001/chat', {
                     message: inputValue,
                 });
 
