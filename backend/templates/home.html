@@ -1,16 +1,48 @@
+<!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Auth0 Example</title>
+    <title>Chatbot Example</title>
   </head>
   <body>
-    {% if session %}
-    <h1>Welcome {{session.userinfo.name}}!</h1>
-    <p><a href="/logout" id="qsLogoutBtn">Logout</a></p>
-    <div><pre>{{pretty}}</pre></div>
-    {% else %}
-    <h1 id="profileDropDown">Welcome Guest</h1>
-    <p><a href="/login" id="qsLoginBtn">Login</a></p>
-    {% endif %}
+    <h1>Welcome!</h1>
+    <p>Your session ID: <code>{{ session }}</code></p>
+    <p><a href="/logout">Clear Session</a></p>
+
+    <form id="chat-form">
+      <input type="text" id="message" placeholder="Ask something..." required />
+      <button type="submit">Send</button>
+    </form>
+
+    <div>
+      <h2>Response:</h2>
+      <pre id="response-box"></pre>
+    </div>
+
+    <hr />
+    <h3>Session Info:</h3>
+    <pre>{{ pretty }}</pre>
+
+    <script>
+      const form = document.getElementById('chat-form');
+      const responseBox = document.getElementById('response-box');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const message = document.getElementById('message').value;
+
+        const res = await fetch('/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message }),
+        });
+
+        const data = await res.json();
+        responseBox.textContent = data.response || data.error || 'No response.';
+        form.reset();
+      });
+    </script>
   </body>
 </html>
