@@ -1,6 +1,9 @@
 To run ollama:
 ollama serve
 
+# Static model:
+ollama pull deepseek-r1:1.5b
+
 To run flask (activate virtual env first):
 python3 app.py
 

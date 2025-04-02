@@ -13,8 +13,6 @@ from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain.agents import AgentExecutor, create_react_agent
 from langchain_core.runnables.history import RunnableWithMessageHistory
 
-import pdbp
-
 # Suppress LangSmith warning
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning, message="API key must be provided when using hosted LangSmith API")
@@ -41,7 +39,7 @@ AGENT_MODEL = "deepseek-r1:1.5b"
 def home():
     return render_template('home.html',
                            session=session.get('session_id'),
-                           pretty=json.dumps(session, indent=4))
+                           pretty=json.dumps(dict(session), indent=4))
 
 # Clear session on logout
 @app.route('/logout')
@@ -56,33 +54,43 @@ def test_session():
     print("session: ", session)
     return session.get('test', 'Session not working')
 
-# External API tool: Stock price lookup
-def get_stock_price(symbol: str) -> str:
-    api_key = os.getenv("ALPHA_VANTAGE_API_KEY")
-    url = "https://www.alphavantage.co/query"
-    params = {
-        "function": "GLOBAL_QUOTE",
-        "symbol": symbol,
-        "apikey": api_key
-    }
-    response = requests.get(url, params=params)
-    if response.status_code == 200:
-        data = response.json()
-        try:
-            return data["Global Quote"]["05. price"]
-        except KeyError:
-            return "Stock data unavailable."
-    else:
-        return "Error fetching stock price."
+# # External API tool: Stock price lookup
+# def get_stock_price(symbol: str) -> str:
+#     api_key = os.getenv("ALPHA_VANTAGE_API_KEY")
+#     url = "https://www.alphavantage.co/query"
+#     params = {
+#         "function": "GLOBAL_QUOTE",
+#         "symbol": symbol,
+#         "apikey": api_key
+#     }
+#     response = requests.get(url, params=params)
+#     if response.status_code == 200:
+#         data = response.json()
+#         try:
+#             return data["Global Quote"]["05. price"]
+#         except KeyError:
+#             return "Stock data unavailable."
+#     else:
+#         return "Error fetching stock price."
 
-# LangChain tool wrapper
-api_tools = [
-    Tool(
-        name="GetStockPrice",
-        func=get_stock_price,
-        description="Fetches the current price for a given stock symbol."
-    )
-]
+# # LangChain tool wrapper
+# api_tools = [
+#     Tool(
+#         name="GetStockPrice",
+#         func=get_stock_price,
+#         description="Fetches the current price for a given stock symbol."
+#     )
+# ]
+
+# Remove <think></think> tags from Agent's response
+import re
+def extract_output(input_text: str):
+    """ Function to extract output after <think></think> tags from Agent's output response. """
+    match = re.search(r"</think>(.*)", input_text, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    return input_text.strip()
+
 
 # Load prompt and LLM
 prompt = hub.pull("hwchase17/react")
@@ -100,8 +108,8 @@ def chat():
         memory = ChatMessageHistory(session_id=session['session_id'])
 
         # Create agent and executor fresh each time (ensures separation per request)
-        agent = create_react_agent(llm, api_tools, prompt)
-        agent_executor = AgentExecutor(agent=agent, tools=api_tools)
+        agent = create_react_agent(llm=llm, tools=[], prompt=prompt) # tools: api_tools
+        agent_executor = AgentExecutor(agent=agent, tools=[], handle_parsing_errors=True) # tools: api_tools
         agent_with_chat_history = RunnableWithMessageHistory(
             agent_executor,
             lambda _: memory,
@@ -109,11 +117,10 @@ def chat():
             history_messages_key="chat_history",
         )
 
-        # breakpoint()
-
         # Invoke the agent
-        response = agent_with_chat_history.invoke({"input": user_input}, {'configurable': {'session_id': session["session_id"]}})
-        return jsonify({"response": response.get("output", "No response generated.")})
+        raw_response = agent_with_chat_history.invoke({"input": user_input}, {'configurable': {'session_id': session["session_id"]}})
+        final_response = extract_output(raw_response.get("output", ""))
+        return jsonify({"response": final_response})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
