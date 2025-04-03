@@ -1,34 +1,47 @@
-// App.js
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import MenuBar from './MenuBar';
 import HomePage from './HomePage';
 import ChatPage from './ChatScreen';
 import InfoBankPage from './InfoBank';
+import LoginPage from './login.js';
+import SignupPage from './signup.js'
+// import ProtectedRoute from './ProtectedRoute';
 
 const App = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<HomePage />} /> {/* No MenuBar here */}
-        <Route
-          path="/chat"
-          element={
-            <>
-              <MenuBar />
-              <ChatPage />
-            </>
-          }
-        />
-        <Route
-          path="/infobank"
-          element={
-            <>
-              <MenuBar />
-              <InfoBankPage />
-            </>
-          }
-        />
+        {/* Public Routes */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        
+        {/* Protected Routes - Only accessible when authenticated */}
+        {/* <Route element={<ProtectedRoute />}> */}
+        <Route>
+          <Route
+            path="/chat"
+            element={
+              <>
+                <MenuBar />
+                <ChatPage />
+              </>
+            }
+          />
+          <Route
+            path="/infobank"
+            element={
+              <>
+                <MenuBar />
+                <InfoBankPage />
+              </>
+            }
+          />
+        </Route>
+
+        {/* Fallback route for unknown paths */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );

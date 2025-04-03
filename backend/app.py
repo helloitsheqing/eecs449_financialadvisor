@@ -12,6 +12,8 @@ from langchain.tools import Tool
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain.agents import AgentExecutor, create_react_agent
 from langchain_core.runnables.history import RunnableWithMessageHistory
+from auth import auth_bp
+from database import *
 
 # Suppress LangSmith warning
 import warnings
@@ -22,6 +24,34 @@ load_dotenv('backend_env.env')
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
+# More specific alternative if needed:
+# CORS(app, resources={
+#     r"/auth/*": {
+#         "origins": ["http://localhost:3000"],
+#         "methods": ["POST", "OPTIONS"],
+#         "allow_headers": ["Content-Type"]
+#     }
+# })
+
+
+# app.register_blueprint(auth_bp, url_prefix='/auth')
+app.register_blueprint(auth_bp)
+
+
+
+# @app.after_request
+# def after_request(response):
+#     # These headers will override the CORS configuration
+#     response.headers.add('Access-Control-Allow-Origin', '*')
+#     response.headers.add('Access-Control-Allow-Headers', '*')
+#     response.headers.add('Access-Control-Allow-Methods', '*')
+#     return response
+
+
+# from auth import auth_routes
+# app.register_blueprint(auth_routes)
+
+
 app.secret_key = os.getenv('SECRET_KEY', default=uuid.uuid4().hex)
 
 # Assign a unique session_id to each user on first visit
@@ -124,7 +154,9 @@ def chat():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+        
 
 # Run the app
 if __name__ == '__main__':
+    init_db()
     app.run(port=5001, debug=True, host='0.0.0.0')
