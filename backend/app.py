@@ -14,6 +14,7 @@ from langchain.agents import AgentExecutor, create_react_agent
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from auth import auth_bp
 from database import *
+from flask import Response, stream_with_context
 
 # Suppress LangSmith warning
 import warnings
@@ -145,6 +146,7 @@ def chat():
             lambda _: memory,
             input_messages_key="input",
             history_messages_key="chat_history",
+            max_iterations="10"
         )
 
         # Invoke the agent
