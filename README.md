@@ -4,7 +4,7 @@ Github Repository for EECS449 Conversational AI Project: Financial Advisor Tool
 By: Anneliese Ferguson, Benjamin Yee, Cindy Zhang, Fabian Ruiz, Herman Wu, Heqing (HQ) Wang, Julia Morville, Vedikas Sridharan
 
 
-to start ollama functionality (root terminal):
+to start ollama functionality (root terminal):\n
     1. run `ollama pull deepseek-r1:1.5b`
     2. run `ollama serve`
 
