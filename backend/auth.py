@@ -25,7 +25,7 @@ import binascii
 import os
 import hashlib
 # from app import app
-from flask import request, render_template, make_response, Blueprint, jsonify
+from flask import request, render_template, make_response, Blueprint, jsonify, session, redirect
 import pdbp
 
 SALT_LENGTH = 16  # 16 bytes = 32 hex characters
@@ -84,6 +84,9 @@ def verify_user(username, password):
 
         if input_password_hash == actual_password_hash:
             # we know this user is legit and entered the correct password
+
+            # TODO: check this out because we need to assign sessions
+            # session["username"] = username 
             return {"success": True, 
                     "message": "User authentication successul."}, 200
         else:
@@ -92,6 +95,12 @@ def verify_user(username, password):
 
     return None
 
+
+# Clear session on logout
+@auth_bp.route('/logout')
+def logout():
+    session.clear()
+    return redirect('/')
 
 
 # these functions are currently under testing mode, which is why there is an html string object

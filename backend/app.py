@@ -72,11 +72,6 @@ def home():
                            session=session.get('session_id'),
                            pretty=json.dumps(dict(session), indent=4))
 
-# Clear session on logout
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect('/')
 
 # Test session route
 @app.route('/test-session')

@@ -1,11 +1,21 @@
 // InfoBank.js
 import React, { useState } from 'react';
 
-const InfoBankPage = () => {
+const InfoBankPage = ({ username }) => {
     const [savedChats, setSavedChats] = useState([]);
 
     const handleSaveChat = (chat) => {
         setSavedChats((prevChats) => [...prevChats, chat]);
+    };
+
+    const handleClearChat = async (chat) => {
+        setSavedChats([]);
+
+        const response = await fetch(`http://localhost:5001/clear_chats/${username}}`, {
+            method: "DELETE"
+        });
+
+        /* TODO: fetch stuff */
     };
 
     return (
@@ -22,7 +32,7 @@ const InfoBankPage = () => {
                     ))
                 )}
             </div>
-            <button style={styles.clearButton} onClick={() => setSavedChats([])}>
+            <button style={styles.clearButton} onClick={handleClearChat}> 
                 Clear All Chats
             </button>
         </div>
