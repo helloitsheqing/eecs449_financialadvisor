@@ -1,7 +1,7 @@
 // InfoBank.js
 import React, { useState } from 'react';
 
-const InfoBankPage = ({ username }) => {
+const InfoBankPage = () => {
     const [savedChats, setSavedChats] = useState([]);
 
     const handleSaveChat = (chat) => {
@@ -11,11 +11,27 @@ const InfoBankPage = ({ username }) => {
     const handleClearChat = async (chat) => {
         setSavedChats([]);
 
-        const response = await fetch(`http://localhost:5001/clear_chats/${username}}`, {
-            method: "DELETE"
-        });
+        try {
+            const response = await fetch(`http://localhost:5001/clear-chats`, {
+                method: "DELETE",
+                credentials: "include",
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
 
-        /* TODO: fetch stuff */
+            if (!response.ok){
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log("Chats cleared:", result);
+        } catch (error) {
+            console.error("Error clearing chats:", error);
+            // Revert state if API call fails
+            setSavedChats(prevChats => [...prevChats]);
+            alert('Failed to clear chats. Please try again.');
+        }    
     };
 
     return (

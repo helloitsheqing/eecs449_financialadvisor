@@ -61,8 +61,24 @@ def register_user(username, password):
             )
             conn.commit()
             # return conn.execute("SELECT last_insert_rowid()").fetchone()[0]
-            return {"success": True,
-                    "message": "User registration sucessful."}
+            # if "username" not in session:
+            session["username"] = username 
+            session.permanent = True
+            session.modified = True
+
+            response = jsonify({
+                "success": True,
+                "message": "Signup successful",
+                "username": username
+            })
+
+            response.set_cookie(
+                'laughing_stocks_session',
+                value=session["session_id"],
+                httponly=True,
+                samesite='Lax'
+            )
+            return response
         
         except sqlite3.IntegrityError:
             return {"success": False, 
@@ -70,7 +86,7 @@ def register_user(username, password):
 
 
 def verify_user(username, password):
-    # extract the (username, password_hash, password_salt) tuple from the database
+    """Extract (username, password_hash, password_salt) tuple from db."""
     with get_db() as conn:
         user_data = conn.execute(
             "SELECT password_hash, password_salt FROM users WHERE username = ?",
@@ -84,11 +100,26 @@ def verify_user(username, password):
 
         if input_password_hash == actual_password_hash:
             # we know this user is legit and entered the correct password
+            # breakpoint()
+            # if "username" not in session:
+            session["username"] = username 
+            session.permanent = True
+            session.modified = True
 
-            # TODO: check this out because we need to assign sessions
-            # session["username"] = username 
-            return {"success": True, 
-                    "message": "User authentication successul."}, 200
+
+            response = jsonify({
+                "success": True,
+                "message": "Login successful",
+                "username": username
+            })
+
+            response.set_cookie(
+                'laughing_stocks_session',
+                value=session["session_id"],
+                httponly=True,
+                samesite='Lax'
+            )
+            return response
         else:
             return {"success": False,
                     "message": "User authentication failed."}, 401  # is this the right code?
@@ -106,7 +137,7 @@ def logout():
 # these functions are currently under testing mode, which is why there is an html string object
 @auth_bp.route("/auth/login", methods=["POST", "OPTIONS"])
 def login():
-
+    print("session: ", session)
     if request.method == 'OPTIONS':
         return _build_preflight_response()
 
@@ -137,5 +168,6 @@ def _build_preflight_response():
     response.headers.add("Access-Control-Allow-Origin", "http://localhost:3000")
     response.headers.add("Access-Control-Allow-Headers", "Content-Type")
     response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
+    response.headers.add("Access-Control-Allow-Credentials", "true")  # Crucial for sessions
     response.headers.add("Content-Type", "application/json")
     return response

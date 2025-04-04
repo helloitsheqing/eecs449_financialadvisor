@@ -33,7 +33,7 @@ const SignupPage = () => {
         try {
             const response = await fetch('http://localhost:5001/auth/signup', {
                 method: 'POST',
-                // mode: 'no-cors',
+                credentials: "include",
                 headers: {
                     'Content-Type': 'application/json',
                 },

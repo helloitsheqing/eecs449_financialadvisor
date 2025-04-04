@@ -1,3 +1,4 @@
+from datetime import timedelta
 from flask import Flask, request, jsonify, redirect, url_for, render_template, session
 from flask_cors import CORS
 import requests
@@ -15,6 +16,7 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 from auth import auth_bp
 from database import *
 from flask import Response, stream_with_context
+from flask_session import Session
 
 # Suppress LangSmith warning
 import warnings
@@ -24,7 +26,29 @@ warnings.filterwarnings("ignore", category=UserWarning, message="API key must be
 load_dotenv('backend_env.env')
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True)
+app.config.update(
+    SECRET_KEY=os.getenv('SECRET_KEY', 'your-very-secret-key-here'),
+    SESSION_TYPE='filesystem',  # Stores sessions on server
+    SESSION_FILE_DIR='./flask_session',  # Directory for session files
+    SESSION_COOKIE_NAME='laughing_stocks_session',
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SECURE=False,  # True in production
+    SESSION_COOKIE_SAMESITE='Lax',
+    PERMANENT_SESSION_LIFETIME=timedelta(days=7)
+)
+
+Session(app)
+CORS(app,
+    supports_credentials=True,
+    resources={
+        r"/auth/*": {
+            "origins": "http://localhost:3000",
+            "methods": ["GET", "POST", "OPTIONS", "DELETE"],
+            "allow_headers": ["Content-Type"],
+            "expose_headers": ["Content-Type"],
+            "supports_credentials": True
+        }
+    })
 # More specific alternative if needed:
 # CORS(app, resources={
 #     r"/auth/*": {
@@ -53,8 +77,6 @@ app.register_blueprint(auth_bp)
 # app.register_blueprint(auth_routes)
 
 
-app.secret_key = os.getenv('SECRET_KEY', default=uuid.uuid4().hex)
-
 # Assign a unique session_id to each user on first visit
 @app.before_request
 def assign_session_id():
@@ -76,8 +98,15 @@ def home():
 # Test session route
 @app.route('/test-session')
 def test_session():
+    # TODO: ensure session is persisting, because currently it's not
+    # this means that certain session attributes are set on certain endpoints
+    # but they don't stay at other endpoints.
+    # for example, in this endpoint, when we examine the session, we can see
+    # that it ONLY contains the test key, but it should contain username and other stuff
+
     session['test'] = 'This is a test'
     print("session: ", session)
+    print("username: ", session.get("username"))
     return session.get('test', 'Session not working')
 
 # # External API tool: Stock price lookup
