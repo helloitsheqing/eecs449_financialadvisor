@@ -2,6 +2,12 @@
 import React, { useState } from 'react';
 
 const InfoBankPage = () => {
+    /* 
+    we have an endpoint for extracting all chats
+    how do we set up this component so that it makes use of that endpoint to get
+    information for all chats
+    */
+
     const [savedChats, setSavedChats] = useState([]);
 
     const handleSaveChat = (chat) => {
