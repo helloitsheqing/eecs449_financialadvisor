@@ -63,8 +63,8 @@ def register_user(username, password):
             # return conn.execute("SELECT last_insert_rowid()").fetchone()[0]
             # if "username" not in session:
             session["username"] = username 
-            session.permanent = True
-            session.modified = True
+            # session.permanent = True
+            # session.modified = True
 
             response = jsonify({
                 "success": True,
@@ -103,8 +103,8 @@ def verify_user(username, password):
             # breakpoint()
             # if "username" not in session:
             session["username"] = username 
-            session.permanent = True
-            session.modified = True
+            # session.permanent = True
+            # session.modified = True
 
 
             response = jsonify({

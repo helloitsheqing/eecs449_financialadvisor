@@ -82,6 +82,10 @@ app.register_blueprint(auth_bp)
 def assign_session_id():
     if 'session_id' not in session:
         session['session_id'] = str(uuid.uuid4())
+        session['username'] = "username"
+        session['test'] = ""
+        session.permanent = True
+        session.modified = True
 
 # Ollama model to use
 AGENT_MODEL = "deepseek-r1:1.5b"
@@ -105,37 +109,39 @@ def test_session():
     # that it ONLY contains the test key, but it should contain username and other stuff
 
     session['test'] = 'This is a test'
+    session.modified = True
     print("session: ", session)
     print("username: ", session.get("username"))
+    print("app: ", app)
     return session.get('test', 'Session not working')
 
-# # External API tool: Stock price lookup
-# def get_stock_price(symbol: str) -> str:
-#     api_key = os.getenv("ALPHA_VANTAGE_API_KEY")
-#     url = "https://www.alphavantage.co/query"
-#     params = {
-#         "function": "GLOBAL_QUOTE",
-#         "symbol": symbol,
-#         "apikey": api_key
-#     }
-#     response = requests.get(url, params=params)
-#     if response.status_code == 200:
-#         data = response.json()
-#         try:
-#             return data["Global Quote"]["05. price"]
-#         except KeyError:
-#             return "Stock data unavailable."
-#     else:
-#         return "Error fetching stock price."
+# External API tool: Stock price lookup
+def get_stock_price(symbol: str) -> str:
+    api_key = os.getenv("ALPHA_VANTAGE_API_KEY")
+    url = "https://www.alphavantage.co/query"
+    params = {
+        "function": "GLOBAL_QUOTE",
+        "symbol": symbol,
+        "apikey": api_key
+    }
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        data = response.json()
+        try:
+            return data["Global Quote"]["05. price"]
+        except KeyError:
+            return "Stock data unavailable."
+    else:
+        return "Error fetching stock price."
 
-# # LangChain tool wrapper
-# api_tools = [
-#     Tool(
-#         name="GetStockPrice",
-#         func=get_stock_price,
-#         description="Fetches the current price for a given stock symbol."
-#     )
-# ]
+# LangChain tool wrapper
+api_tools = [
+    Tool(
+        name="GetStockPrice",
+        func=get_stock_price,
+        description="Fetches the current price for a given stock symbol."
+    )
+]
 
 # Remove <think></think> tags from Agent's response
 import re
@@ -160,17 +166,21 @@ def chat():
             return jsonify({"error": "No message provided"}), 400
 
         # Create memory specific to user's session
-        memory = ChatMessageHistory(session_id=session['session_id'])
+        memory = ChatMessageHistory(session_id=session['session_id'])  # TODO: look at incorporating memory?
 
         # Create agent and executor fresh each time (ensures separation per request)
-        agent = create_react_agent(llm=llm, tools=[], prompt=prompt) # tools: api_tools
-        agent_executor = AgentExecutor(agent=agent, tools=[], handle_parsing_errors=True) # tools: api_tools
+        agent = create_react_agent(llm=llm, tools=api_tools, prompt=prompt) # tools: api_tools
+        agent_executor = AgentExecutor(agent=agent, 
+                                tools=api_tools, 
+                                handle_parsing_errors=True,
+                                max_iterations=20, # Increased number of max iterations to avoid time out
+                                max_execution_time=120) # Increased the maximum timeout to allow for longer processing) 
+
         agent_with_chat_history = RunnableWithMessageHistory(
             agent_executor,
-            lambda _: memory,
+            lambda session_id: ChatMessageHistory(session_id=session_id),
             input_messages_key="input",
-            history_messages_key="chat_history",
-            max_iterations="10"
+            history_messages_key="chat_history"
         )
 
         # Invoke the agent

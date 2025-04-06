@@ -6,9 +6,7 @@ import pdbp
 @app.route("/clear-chats", methods=["DELETE"])
 def clear_chats():
 
-    # TODO: ensure session is persisting. once it is, this should be included
-    # if flask.session.get("username") != username:
-    #     return flask.jsonify({"error": "Unauthorized"}), 403
+    # TODO: ensure session is persisting
 
     # breakpoint()
     username = flask.session.get("username")
