@@ -32,7 +32,7 @@ def init_db():
         conn.execute("""
         CREATE TABLE IF NOT EXISTS user_conversations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
+            username TEXT NOT NULL,
             conversation_data TEXT NOT NULL,
             conversation_title TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

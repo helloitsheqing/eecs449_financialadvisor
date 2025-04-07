@@ -13,7 +13,7 @@ from langchain.tools import Tool
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain.agents import AgentExecutor, create_react_agent
 from langchain_core.runnables.history import RunnableWithMessageHistory
-from auth import auth_bp
+from auth import auth_bp, _build_preflight_response
 from database import *
 from flask import Response, stream_with_context
 from flask_session import Session
@@ -47,17 +47,14 @@ CORS(app,
             "allow_headers": ["Content-Type"],
             "expose_headers": ["Content-Type"],
             "supports_credentials": True
+        },
+        r"/chat": {
+            "origins": "http://localhost:3000",
+            "methods": ["POST", "OPTIONS"],
+            "allow_headers": ["Content-Type"],
+            "supports_credentials": True
         }
     })
-# More specific alternative if needed:
-# CORS(app, resources={
-#     r"/auth/*": {
-#         "origins": ["http://localhost:3000"],
-#         "methods": ["POST", "OPTIONS"],
-#         "allow_headers": ["Content-Type"]
-#     }
-# })
-
 
 # app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(auth_bp)
@@ -104,12 +101,6 @@ def home():
 # Test session route
 @app.route('/test-session')
 def test_session():
-    # TODO: ensure session is persisting, because currently it's not
-    # this means that certain session attributes are set on certain endpoints
-    # but they don't stay at other endpoints.
-    # for example, in this endpoint, when we examine the session, we can see
-    # that it ONLY contains the test key, but it should contain username and other stuff
-
     session['test'] = 'This is a test'
     session.modified = True
     print("session: ", session)
@@ -161,10 +152,9 @@ prompt = hub.pull("hwchase17/react")
 llm = OllamaLLM(model=AGENT_MODEL)
 
 # Chat route using session-based memory
-@app.route('/chat', methods=['POST', 'OPTIONS'])
+@app.route('/chat', methods=['POST'])
 def chat():
-    # if request.method == "OPTIONS":
-    #     return jsonify({"success": True}), 200
+    # breakpoint()
     try:
         user_input = request.get_json().get('message')
         if not user_input:
@@ -191,6 +181,20 @@ def chat():
         # Invoke the agent
         raw_response = agent_with_chat_history.invoke({"input": user_input}, {'configurable': {'session_id': session["session_id"]}})
         final_response = extract_output(raw_response.get("output", ""))
+
+
+        # add conversation to database
+        # title_prompt = agent_with_chat_history.invoke({"input": "come up with a short 50char max title for our conversation"},
+        #                                               {'configurable': {'session_id': session["session_id"]}})
+        # title_response = extract_output(title_prompt.get("output", "default title"))
+
+        # with get_db() as conn:
+        #     username = session.get("username")
+        #     conversation_data = [{"prompt": user_input, "response": final_response}]
+        #     conversation_data = json.dumps(conversation_data)
+        #     conn.execute("""
+        #     INSERT INTO user_conversations (username, conversation_data, conversation_title) VALUES (?, ?, ?)
+        #     """, (username, conversation_data, title_response))
         return jsonify({"response": final_response})
 
     except Exception as e:

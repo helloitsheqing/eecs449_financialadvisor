@@ -18,8 +18,8 @@ const ChatPage = () => {
             try {
                 const response = await axios.post('http://localhost:5001/chat', {
                     message: inputValue,
-                    // mode: 'no-cors',
-                    method: "POST"
+                    method: "POST", 
+                    credentials: 'include'
                 });
 
                 const botResponse = response.data.response;
