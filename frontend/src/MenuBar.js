@@ -7,7 +7,7 @@ const MenuBar = () => {
         <div style={styles.menuBar}>
             <Link to="/chat" style={styles.link}>Chat</Link>
             <Link to="/infobank" style={styles.link}>Info Bank</Link>
-        </div> 
+        </div>
     );
 };
 
