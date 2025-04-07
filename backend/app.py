@@ -63,7 +63,6 @@ CORS(app,
 app.register_blueprint(auth_bp)
 
 
-
 # @app.after_request
 # def after_request(response):
 #     # These headers will override the CORS configuration
@@ -71,6 +70,7 @@ app.register_blueprint(auth_bp)
 #     response.headers.add('Access-Control-Allow-Headers', '*')
 #     response.headers.add('Access-Control-Allow-Methods', '*')
 #     return response
+    
 
 
 # from auth import auth_routes
@@ -82,10 +82,12 @@ app.register_blueprint(auth_bp)
 def assign_session_id():
     if 'session_id' not in session:
         session['session_id'] = str(uuid.uuid4())
-        session['username'] = "username"
-        session['test'] = ""
-        session.permanent = True
-        session.modified = True
+    
+    # if "username" not in session:
+    #     session['username'] = "username"
+        # session['test'] = ""
+    # session.permanent = True
+    session.modified = True
 
 # Ollama model to use
 AGENT_MODEL = "deepseek-r1:1.5b"
@@ -113,6 +115,7 @@ def test_session():
     print("session: ", session)
     print("username: ", session.get("username"))
     print("app: ", app)
+    # print("session username: ")
     return session.get('test', 'Session not working')
 
 # External API tool: Stock price lookup
@@ -158,8 +161,10 @@ prompt = hub.pull("hwchase17/react")
 llm = OllamaLLM(model=AGENT_MODEL)
 
 # Chat route using session-based memory
-@app.route('/chat', methods=['POST'])
+@app.route('/chat', methods=['POST', 'OPTIONS'])
 def chat():
+    # if request.method == "OPTIONS":
+    #     return jsonify({"success": True}), 200
     try:
         user_input = request.get_json().get('message')
         if not user_input:

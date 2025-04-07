@@ -25,10 +25,12 @@ import binascii
 import os
 import hashlib
 # from app import app
-from flask import request, render_template, make_response, Blueprint, jsonify, session, redirect
+from flask import request, render_template, make_response, Blueprint, jsonify, session, redirect, url_for
 import pdbp
+# from app import SESSION_USERNAME
 
 SALT_LENGTH = 16  # 16 bytes = 32 hex characters
+SESSION_USERNAME = ""
 
 
 auth_bp = Blueprint('auth', __name__)
@@ -62,7 +64,8 @@ def register_user(username, password):
             conn.commit()
             # return conn.execute("SELECT last_insert_rowid()").fetchone()[0]
             # if "username" not in session:
-            session["username"] = username 
+            # session["username"] = username 
+            # SESSION_USERNAME = username
             # session.permanent = True
             # session.modified = True
 
@@ -102,7 +105,8 @@ def verify_user(username, password):
             # we know this user is legit and entered the correct password
             # breakpoint()
             # if "username" not in session:
-            session["username"] = username 
+            # session["username"] = username 
+            # SESSION_USERNAME = username
             # session.permanent = True
             # session.modified = True
 
@@ -123,7 +127,6 @@ def verify_user(username, password):
         else:
             return {"success": False,
                     "message": "User authentication failed."}, 401  # is this the right code?
-
     return None
 
 
@@ -144,8 +147,16 @@ def login():
     data = request.get_json()
     username = data.get("username")
     password = data.get("password")
-    
-    return verify_user(username, password)
+    # breakpoint()
+    user_verification = verify_user(username, password)
+
+    if user_verification.get_json()["success"]:
+        if "username" not in session:
+            session["username"] = username
+        session.permanent = True
+        session.modified = True
+    # return redirect(url_for("chat"))
+    return user_verification
 
 
 @auth_bp.route("/auth/signup", methods=["POST", "OPTIONS"])
@@ -160,7 +171,23 @@ def signup():
     username = data.get("username")
     password = data.get("password")
 
-    return register_user(username, password)
+    user_registration = register_user(username, password)
+
+    if user_registration.get_json()["sucess"]:
+        if "username" not in session:
+            session["username"] = username
+        session.permanent = True
+        session.modified = True
+    # return redirect('/chat')
+    return user_registration
+
+
+@auth_bp.route("/auth/whoami")
+def whoami():
+    return jsonify({
+        "username": session.get("username"),
+        "session_data": dict(session)
+    })
 
 
 def _build_preflight_response():
