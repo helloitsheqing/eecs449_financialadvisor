@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './HomePage.css';
+import LogUserContext from './context.js';
 
 const LoginPage = () => {
     const navigate = useNavigate();
+    const {setUsername} = useContext(LogUserContext);
     const [formData, setFormData] = useState({
         username: '',
         password: ''
@@ -45,6 +47,7 @@ const LoginPage = () => {
                 if (data.token) {
                     localStorage.setItem('authToken', data.token);
                 }
+                setUsername(formData.username);
                 navigate('/chat');
             } else {
                 setError(data.message || 'Login failed');

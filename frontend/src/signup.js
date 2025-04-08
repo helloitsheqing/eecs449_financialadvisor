@@ -1,11 +1,14 @@
 // this file needs more work because right now it is just a copy of the login page
 
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './HomePage.css';
+// import React from 'react';
+import LogUserContext from './context.js';
 
 const SignupPage = () => {
     const navigate = useNavigate();
+    const {setUsername} = useContext(LogUserContext);
     const [formData, setFormData] = useState({
         username: '',
         password: ''
@@ -49,6 +52,7 @@ const SignupPage = () => {
                 if (data.token) {
                     localStorage.setItem('authToken', data.token);
                 }
+                setUsername(formData.username);
                 navigate('/chat');
             } else {
                 setError(data.message || 'Signup failed');

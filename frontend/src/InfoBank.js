@@ -1,24 +1,191 @@
+// // InfoBank.js
+// import React, { useState } from 'react';
+
+// const InfoBankPage = () => {
+//     /* 
+//     we have an endpoint for extracting all chats
+//     how do we set up this component so that it makes use of that endpoint to get
+//     information for all chats
+//     */
+
+//     const [savedChats, setSavedChats] = useState([]);
+//     const [selectedChat, setSelectedChat] = useState(null)
+
+//     useEffect(() => {
+//         const fetchChats = async () => {
+//             try {
+//                 const response = await fetch('http://localhost:5001/chats', {
+//                     method: 'GET',
+//                     credentials: 'include',
+//                     headers: {
+//                         'Content-Type': 'application/json'
+//                     }
+//                 });
+
+//                 if (!response.ok) {
+//                     throw new Error(`HTTP error! status: ${response.status}`);
+//                 }
+
+//                 const result = await response.json();
+//                 if (result.success && result.data) {
+//                     setSavedChats(result.data);
+//                 }
+//             } catch (error) {
+//                 console.error("Error fetching chats:", error);
+//             }
+//         };
+//         fetchChats();
+//     }, []);
+
+
+//     // const handleSaveChat = (chat) => {
+//     //     setSavedChats((prevChats) => [...prevChats, chat]);
+//     // };
+
+//     const handleClearChat = async (chat) => {
+//         setSavedChats([]);
+
+//         try {
+//             const response = await fetch(`http://localhost:5001/clear-chats`, {
+//                 method: "DELETE",
+//                 credentials: "include",
+//                 headers: {
+//                     'Content-Type': 'application/json'
+//                 }
+//             });
+
+//             if (!response.ok){
+//                 throw new Error(`HTTP error! status: ${response.status}`);
+//             }
+
+//             const result = await response.json();
+//             console.log("Chats cleared:", result);
+//         } catch (error) {
+//             console.error("Error clearing chats:", error);
+//             // Revert state if API call fails
+//             setSavedChats(prevChats => [...prevChats]);
+//             alert('Failed to clear chats. Please try again.');
+//         }    
+//     };
+
+//     const handleViewChat = async (chatId) => {
+//         try {
+//             const response = await fetch(`http://localhost:5001/chat/${chatId}`, {
+//                 method: "GET",
+//                 credentials: "include",
+//                 headers: {
+//                     'Content-Type': 'application/json'
+//                 }
+//             });
+
+//             if (!response.ok) {
+//                 throw new Error(`HTTP error! status: ${response.status}`);
+//             }
+
+//             const result = await response.json();
+//             if (result.success) {
+//                 setSelectedChat(result.data);
+//             }
+//         } catch (error) {
+//             console.error("Error fetching chat:", error);
+//         }
+//     };
+
+
+//     return (
+//         <div style={styles.container}>
+//             <p>Info Bank</p>
+//             <div style={styles.savedChats}>
+//                 {savedChats.length === 0 ? (
+//                     <p>No chats saved yet.</p>
+//                 ) : (
+//                     savedChats.map((chat, index) => (
+//                         <div key={index} style={styles.chat}>
+//                             <p>{chat}</p>
+//                         </div>
+//                     ))
+//                 )}
+//             </div>
+//             <button style={styles.clearButton} onClick={handleClearChat}> 
+//                 Clear All Chats
+//             </button>
+//         </div>
+//     );
+// };
+
+// const styles = {
+//     container: {
+//         padding: '20px',
+//         backgroundColor: '#f1f8e9',
+//         borderRadius: '8px',
+//         maxWidth: '500px',
+//         margin: '20px auto',
+//         textAlign: 'center',
+//     },
+//     savedChats: {
+//         marginBottom: '20px',
+//     },
+//     chat: {
+//         padding: '10px',
+//         marginBottom: '10px',
+//         borderRadius: '5px',
+//         backgroundColor: '#c8e6c9',
+//         textAlign: 'center',
+//     },
+//     clearButton: {
+//         padding: '10px 20px',
+//         backgroundColor: '#f44336',
+//         color: 'white',
+//         border: 'none',
+//         borderRadius: '5px',
+//         cursor: 'pointer',
+//     },
+// };
+
+// export default InfoBankPage;
+
+
+
 // InfoBank.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import ExistingChatPage from './existingChatScreen.js';
 
 const InfoBankPage = () => {
-    /* 
-    we have an endpoint for extracting all chats
-    how do we set up this component so that it makes use of that endpoint to get
-    information for all chats
-    */
-
     const [savedChats, setSavedChats] = useState([]);
+    const [selectedChat, setSelectedChat] = useState(null);
+    const navigate = useNavigate();
 
-    const handleSaveChat = (chat) => {
-        setSavedChats((prevChats) => [...prevChats, chat]);
-    };
+    useEffect(() => {
+        const fetchChats = async () => {
+            try {
+                const response = await fetch('http://localhost:5001/info_bank/chats', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-    const handleClearChat = async (chat) => {
-        setSavedChats([]);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
+                const result = await response.json();
+                if (result.success && result.data) {
+                    setSavedChats(result.data);
+                }
+                console.log(result);
+            } catch (error) {
+                console.error("Error fetching chats:", error);
+            }
+        };
+        fetchChats();
+    }, []);
+
+    const handleClearChat = async () => {
         try {
-            const response = await fetch(`http://localhost:5001/clear-chats`, {
+            const response = await fetch(`http://localhost:5001/info_bank/clear-chats`, {
                 method: "DELETE",
                 credentials: "include",
                 headers: {
@@ -32,31 +199,84 @@ const InfoBankPage = () => {
 
             const result = await response.json();
             console.log("Chats cleared:", result);
+            setSavedChats([]);
+            setSelectedChat(null);
         } catch (error) {
             console.error("Error clearing chats:", error);
-            // Revert state if API call fails
-            setSavedChats(prevChats => [...prevChats]);
             alert('Failed to clear chats. Please try again.');
         }    
     };
 
+    const handleViewChat = async (chatId) => {
+        try {
+            const response = await fetch(`http://localhost:5001/info_bank/chat/${chatId}`, {
+                method: "GET",
+                credentials: "include",
+                // mode: "no-cors",
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                console.log("response: ", response);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            if (result.success) {
+                setSelectedChat(result.data);
+                navigate('/existing-chat');
+                console.log("result: ", result);
+            }
+        } catch (error) {
+            console.error("Error fetching chat:", error);
+        }
+    };
+
     return (
         <div style={styles.container}>
-            <p>Info Bank</p>
-            <div style={styles.savedChats}>
+            <h2>Info Bank</h2>
+            <div style={styles.chatList}>
                 {savedChats.length === 0 ? (
                     <p>No chats saved yet.</p>
                 ) : (
-                    savedChats.map((chat, index) => (
-                        <div key={index} style={styles.chat}>
-                            <p>{chat}</p>
-                        </div>
-                    ))
+                    <ul style={styles.chatListUl}>
+                        {savedChats.map((chat) => (
+                            <li key={chat.id} style={styles.chatListItem}>
+                                <button 
+                                    style={styles.chatTitleButton}
+                                    onClick={() => handleViewChat(chat.id)}
+                                >
+                                    {chat.conversation_title || "Untitled Conversation"}
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
                 )}
             </div>
-            <button style={styles.clearButton} onClick={handleClearChat}> 
-                Clear All Chats
-            </button>
+            
+            {selectedChat && (
+                <div style={styles.chatView}>
+                    <h3>{selectedChat.conversation_title || "Untitled Conversation"}</h3>
+                    <div style={styles.messagesContainer}>
+                        {/* {JSON.parse(selectedChat.conversation_data).map((message, index) => (
+                            <div key={index} style={styles.message}>
+                                <strong>User:</strong> {message.prompt}
+                                <br />
+                                <strong>Bot:</strong> {message.response}
+                            </div>
+                        ))} */}
+                        <ExistingChatPage existingMessages={selectedChat?.conversation_data || []}/>
+                    </div>
+                </div>
+            )}
+            
+            {savedChats.length > 0 && (
+                <button style={styles.clearButton} onClick={handleClearChat}> 
+                    Clear All Chats
+                </button>
+            )}
         </div>
     );
 };
@@ -66,19 +286,43 @@ const styles = {
         padding: '20px',
         backgroundColor: '#f1f8e9',
         borderRadius: '8px',
-        maxWidth: '500px',
+        maxWidth: '800px',
         margin: '20px auto',
-        textAlign: 'center',
     },
-    savedChats: {
+    chatList: {
         marginBottom: '20px',
     },
-    chat: {
+    chatListUl: {
+        listStyle: 'none',
+        padding: 0,
+    },
+    chatListItem: {
+        marginBottom: '8px',
+    },
+    chatTitleButton: {
+        padding: '8px 12px',
+        backgroundColor: '#4caf50',
+        color: 'white',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        width: '100%',
+        textAlign: 'left',
+    },
+    chatView: {
+        marginTop: '20px',
+        padding: '15px',
+        backgroundColor: '#e8f5e9',
+        borderRadius: '5px',
+    },
+    messagesContainer: {
+        marginTop: '10px',
+    },
+    message: {
         padding: '10px',
         marginBottom: '10px',
-        borderRadius: '5px',
         backgroundColor: '#c8e6c9',
-        textAlign: 'center',
+        borderRadius: '4px',
     },
     clearButton: {
         padding: '10px 20px',
@@ -87,6 +331,7 @@ const styles = {
         border: 'none',
         borderRadius: '5px',
         cursor: 'pointer',
+        marginTop: '20px',
     },
 };
 

@@ -1,11 +1,14 @@
 // ChatPage.js
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import LogUserContext from './context';
 
 const ChatPage = () => {
     const [messages, setMessages] = useState([]);
     const [inputValue, setInputValue] = useState('');
+
+    const {username} = useContext(LogUserContext);
 
     const handleSend = async () => {
         if (inputValue.trim() !== '') {
@@ -16,10 +19,10 @@ const ChatPage = () => {
             setInputValue('');
 
             try {
-                const response = await axios.post('http://localhost:5001/chat', {
+                const response = await axios.post(`http://localhost:5001/chat/${username}`, {
                     message: inputValue,
                     method: "POST", 
-                    credentials: 'include'
+                    credentials: 'include',
                 });
 
                 const botResponse = response.data.response;

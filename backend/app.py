@@ -1,10 +1,12 @@
 from datetime import timedelta
-from flask import Flask, request, jsonify, redirect, url_for, render_template, session
+from flask import Flask, request, jsonify, redirect, url_for, render_template
 from flask_cors import CORS
 import requests
 import os
 import json
 import uuid
+import datetime
+import flask
 from dotenv import load_dotenv
 
 from langchain import hub
@@ -14,9 +16,11 @@ from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain.agents import AgentExecutor, create_react_agent
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from auth import auth_bp, _build_preflight_response
+from info_bank import info_bank
 from database import *
 from flask import Response, stream_with_context
 from flask_session import Session
+from threading import Thread
 
 # Suppress LangSmith warning
 import warnings
@@ -38,26 +42,44 @@ app.config.update(
 )
 
 Session(app)
-CORS(app,
+# CORS(app,
+#     supports_credentials=True,
+#     resources={
+#         r"/auth/*": {
+#             "origins": "http://localhost:3000",
+#             "methods": ["GET", "POST", "OPTIONS", "DELETE"],
+#             "allow_headers": ["Content-Type"],
+#             "expose_headers": ["Content-Type"],
+#             "supports_credentials": True
+#         },
+#         r"/chat": {
+#             "origins": "http://localhost:3000",
+#             "methods": ["GET", "POST", "OPTIONS", "DELETE"],
+#             "allow_headers": ["Content-Type"],
+#             "expose_headers": ["Content-Type"],
+#             "supports_credentials": True
+#         },
+#         r"/info_bank/*":{
+#             "origins": "http://localhost:3000",
+#             "methods": ["GET", "POST", "OPTIONS", "DELETE"],
+#             "allow_headers": ["Content-Type"],
+#             "expose_headers": ["Content-Type"],
+#             "supports_credentials": True
+#         }
+#     })
+CORS(
+    app,
     supports_credentials=True,
-    resources={
-        r"/auth/*": {
-            "origins": "http://localhost:3000",
-            "methods": ["GET", "POST", "OPTIONS", "DELETE"],
-            "allow_headers": ["Content-Type"],
-            "expose_headers": ["Content-Type"],
-            "supports_credentials": True
-        },
-        r"/chat": {
-            "origins": "http://localhost:3000",
-            "methods": ["POST", "OPTIONS"],
-            "allow_headers": ["Content-Type"],
-            "supports_credentials": True
-        }
-    })
+    resources={r"/*": {"origins": "*"}},
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type"],
+    expose_headers=["Content-Type"]
+)
+# CORS(app, resources={r"/*": {"origins": "*"}})
 
 # app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(auth_bp)
+app.register_blueprint(info_bank)
 
 
 # @app.after_request
@@ -77,14 +99,14 @@ app.register_blueprint(auth_bp)
 # Assign a unique session_id to each user on first visit
 @app.before_request
 def assign_session_id():
-    if 'session_id' not in session:
-        session['session_id'] = str(uuid.uuid4())
+    if 'session_id' not in flask.session:
+        flask.session['session_id'] = str(uuid.uuid4())
     
     # if "username" not in session:
     #     session['username'] = "username"
         # session['test'] = ""
     # session.permanent = True
-    session.modified = True
+    flask.session.modified = True
 
 # Ollama model to use
 AGENT_MODEL = "deepseek-r1:1.5b"
@@ -94,20 +116,20 @@ AGENT_MODEL = "deepseek-r1:1.5b"
 @app.route('/')
 def home():
     return render_template('home.html',
-                           session=session.get('session_id'),
-                           pretty=json.dumps(dict(session), indent=4))
+                           session=flask.session.get('session_id'),
+                           pretty=json.dumps(dict(flask.session), indent=4))
 
 
 # Test session route
 @app.route('/test-session')
 def test_session():
-    session['test'] = 'This is a test'
-    session.modified = True
-    print("session: ", session)
-    print("username: ", session.get("username"))
+    flask.session['test'] = 'This is a test'
+    flask.session.modified = True
+    print("session: ", flask.session)
+    print("username: ", flask.session.get("username"))
     print("app: ", app)
     # print("session username: ")
-    return session.get('test', 'Session not working')
+    return flask.session.get('test', 'Session not working')
 
 # External API tool: Stock price lookup
 def get_stock_price(symbol: str) -> str:
@@ -152,8 +174,8 @@ prompt = hub.pull("hwchase17/react")
 llm = OllamaLLM(model=AGENT_MODEL)
 
 # Chat route using session-based memory
-@app.route('/chat', methods=['POST'])
-def chat():
+@app.route('/chat/<string:username>', methods=['POST'])
+def chat(username):
     # breakpoint()
     try:
         user_input = request.get_json().get('message')
@@ -161,7 +183,7 @@ def chat():
             return jsonify({"error": "No message provided"}), 400
 
         # Create memory specific to user's session
-        memory = ChatMessageHistory(session_id=session['session_id'])  # TODO: look at incorporating memory?
+        memory = ChatMessageHistory(session_id=flask.session['session_id'])  # TODO: look at incorporating memory?
 
         # Create agent and executor fresh each time (ensures separation per request)
         agent = create_react_agent(llm=llm, tools=api_tools, prompt=prompt) # tools: api_tools
@@ -179,30 +201,43 @@ def chat():
         )
 
         # Invoke the agent
-        raw_response = agent_with_chat_history.invoke({"input": user_input}, {'configurable': {'session_id': session["session_id"]}})
+        raw_response = agent_with_chat_history.invoke({"input": user_input}, {'configurable': {'session_id': flask.session["session_id"]}})
         final_response = extract_output(raw_response.get("output", ""))
-
-
-        # TODO: add conversation to database
-        # this in theory should do the trick but it kind of makes the whole thing not work
-
-        # title_prompt = agent_with_chat_history.invoke({"input": "come up with a short 50char max title for our conversation"},
-        #                                               {'configurable': {'session_id': session["session_id"]}})
-        # title_response = extract_output(title_prompt.get("output", "default title"))
-
-        # with get_db() as conn:
-        #     username = session.get("username")
-        #     conversation_data = [{"prompt": user_input, "response": final_response}]
-        #     conversation_data = json.dumps(conversation_data)
-        #     cursor = conn.cursor()
-        #     cursor.execute("""
-        #     INSERT INTO user_conversations (username, conversation_data, conversation_title) VALUES (?, ?, ?)
-        #     """, (username, conversation_data, "title_response"))
-        #     conn.commit()
+        # breakpoint()
+        if "conversation_id" not in flask.session:
+            flask.session["conversation_id"] = str(uuid.uuid4())
+            conversation_id = flask.session["conversation_id"]
+            # username = flask.session.get("username")
+            flask.session.modified = True
+            # breakpoint()
+            Thread(target=save_conversation, args=(username,
+                    conversation_id,
+                    user_input,
+                    final_response)).start()
         return jsonify({"response": final_response})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+
+def save_conversation(username, conversation_id, prompt, response):
+    # breakpoint()
+    try:
+        with get_db() as conn:
+            existing = conn.execute("SELECT conversation_data FROM user_conversations WHERE id = ?",
+                                    (conversation_id,)).fetchone()
+            if existing:
+                messages = json.loads(existing["conversation_data"])
+                messages.append({"prompt": prompt, "response": response})
+                conn.execute("UPDATE user_conversations SET conversation_data = ?, updated_at = ? WHERE id = ?",
+                             (json.dumps(messages), datetime.now(), conversation_id))
+            else:
+                conn.execute("INSERT INTO user_conversations (id, username, conversation_title, conversation_data) VALUES (?, ?, ?, ?)",
+                             (conversation_id, username, "New Conversation",  # title will be changed later
+                              json.dumps([{"prompt": prompt, "response": response}])))
+            conn.commit()
+    except Exception as e:
+        print(f"Failed to save conversation: {e}")
         
 
 # Run the app

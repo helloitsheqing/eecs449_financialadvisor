@@ -24,5 +24,6 @@ yarn-error.log*
 
 venv
 *.db
+backend/app.db
 backend/__pycache__
 backend/flask_session

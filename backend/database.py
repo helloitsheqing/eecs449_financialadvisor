@@ -31,13 +31,13 @@ def init_db():
         # a numeric user_id rather than a whole ass username
         conn.execute("""
         CREATE TABLE IF NOT EXISTS user_conversations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id TEXT PRIMARY KEY,
             username TEXT NOT NULL,
             conversation_data TEXT NOT NULL,
             conversation_title TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id)
+            FOREIGN KEY (username) REFERENCES users(username)
         );
         """)
         # here, conversation_data is a string representing a list of json objects representing messages in the conversation
