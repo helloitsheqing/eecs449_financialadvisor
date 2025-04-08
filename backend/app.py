@@ -183,7 +183,9 @@ def chat():
         final_response = extract_output(raw_response.get("output", ""))
 
 
-        # add conversation to database
+        # TODO: add conversation to database
+        # this in theory should do the trick but it kind of makes the whole thing not work
+
         # title_prompt = agent_with_chat_history.invoke({"input": "come up with a short 50char max title for our conversation"},
         #                                               {'configurable': {'session_id': session["session_id"]}})
         # title_response = extract_output(title_prompt.get("output", "default title"))
@@ -192,9 +194,11 @@ def chat():
         #     username = session.get("username")
         #     conversation_data = [{"prompt": user_input, "response": final_response}]
         #     conversation_data = json.dumps(conversation_data)
-        #     conn.execute("""
+        #     cursor = conn.cursor()
+        #     cursor.execute("""
         #     INSERT INTO user_conversations (username, conversation_data, conversation_title) VALUES (?, ?, ?)
-        #     """, (username, conversation_data, title_response))
+        #     """, (username, conversation_data, "title_response"))
+        #     conn.commit()
         return jsonify({"response": final_response})
 
     except Exception as e:
