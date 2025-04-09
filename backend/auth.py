@@ -84,8 +84,8 @@ def register_user(username, password):
             return response
         
         except sqlite3.IntegrityError:
-            return {"success": False, 
-                    "message": "Username already taken."}
+            return jsonify({"success": False, 
+                            "message": "Username already taken."})
 
 
 def verify_user(username, password):
@@ -173,7 +173,7 @@ def signup():
 
     user_registration = register_user(username, password)
 
-    if user_registration.get_json()["sucess"]:
+    if user_registration.get_json()["success"]:
         if "username" not in session:
             session["username"] = username
         session.permanent = True
