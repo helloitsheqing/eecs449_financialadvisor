@@ -6,6 +6,7 @@ import ChatPage from './ChatScreen';
 import InfoBankPage from './InfoBank';
 import LoginPage from './login.js';
 import SignupPage from './signup.js'
+import SettingsPage from './settings.js';
 import ExistingChatPage from './existingChatScreen.js';
 import { LogUserProvider } from './context.js';
 // import ProtectedRoute from './ProtectedRoute';
@@ -20,7 +21,7 @@ const App = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/existing-chat" element={<ExistingChatPage />} />
-          
+
           {/* Protected Routes - Only accessible when authenticated */}
           {/* <Route element={<ProtectedRoute />}> */}
           <Route>
@@ -43,7 +44,15 @@ const App = () => {
               }
             />
           </Route>
-
+          <Route
+            path="/settings"
+            element={
+              <>
+                <MenuBar />
+                <SettingsPage />
+              </>
+            }
+          />
           {/* Fallback route for unknown paths */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
