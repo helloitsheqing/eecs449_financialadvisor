@@ -1,17 +1,19 @@
 // InfoBank.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ExistingChatPage from './existingChatScreen.js';
+import LogUserContext from './context.js';
 
 const InfoBankPage = () => {
     const [savedChats, setSavedChats] = useState([]);
     const [selectedChat, setSelectedChat] = useState(null);
+    const {username} = useContext(LogUserContext);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchChats = async () => {
             try {
-                const response = await fetch('http://localhost:5001/info_bank/chats', {
+                const response = await fetch(`http://localhost:5001/info_bank/${username}/chats`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -37,7 +39,7 @@ const InfoBankPage = () => {
 
     const handleClearChat = async () => {
         try {
-            const response = await fetch(`http://localhost:5001/info_bank/clear-chats`, {
+            const response = await fetch(`http://localhost:5001/info_bank/${username}/clear-chats`, {
                 method: "DELETE",
                 credentials: "include",
                 headers: {
@@ -61,7 +63,7 @@ const InfoBankPage = () => {
 
     const handleViewChat = async (chatId) => {
         try {
-            const response = await fetch(`http://localhost:5001/info_bank/chat/${chatId}`, {
+            const response = await fetch(`http://localhost:5001/info_bank/${username}/chat/${chatId}`, {
                 method: "GET",
                 credentials: "include",
                 // mode: "no-cors",

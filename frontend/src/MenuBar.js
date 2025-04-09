@@ -8,6 +8,7 @@ const MenuBar = () => {
             <Link to="/chat" style={styles.link}>Chat</Link>
             <Link to="/infobank" style={styles.link}>Info Bank</Link>
             <Link to="/settings" style={styles.link}>Settings</Link>
+            <Link to="/upload-excel" style={styles.link}>Upload Spreadsheet</Link>
         </div>
     );
 };

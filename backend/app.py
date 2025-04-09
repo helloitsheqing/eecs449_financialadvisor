@@ -17,6 +17,7 @@ from langchain.agents import AgentExecutor, create_react_agent
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from auth import auth_bp, _build_preflight_response
 from info_bank import info_bank
+from excel import upload_excel_bp
 from database import *
 from flask import Response, stream_with_context
 from flask_session import Session
@@ -80,6 +81,7 @@ CORS(
 # app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(auth_bp)
 app.register_blueprint(info_bank)
+app.register_blueprint(upload_excel_bp)
 
 
 # @app.after_request
@@ -210,10 +212,10 @@ def chat(username):
             # username = flask.session.get("username")
             flask.session.modified = True
             # breakpoint()
-            Thread(target=save_conversation, args=(username,
-                    conversation_id,
-                    user_input,
-                    final_response)).start()
+        Thread(target=save_conversation, args=(username,
+                conversation_id,
+                user_input,
+                final_response)).start()
         return jsonify({"response": final_response})
 
     except Exception as e:

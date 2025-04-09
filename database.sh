@@ -7,6 +7,8 @@ DB_FILE="backend/app.db"
 reset_db() {
     echo "Resetting database..."
     rm -f "$DB_FILE"
+    rm -rf backend/flask_session
+    rm -rf backend/uploads
     sqlite3 "$DB_FILE" <<EOF
 CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -29,7 +31,7 @@ populate_db() {
 INSERT INTO users (username, password_hash, password_salt) VALUES
     ('admin', '8339760f3b7869eb7f353d275cbe7f60605f4431dafe564fea178c7769de8398', '484e3a5d3cbc161a9554490cc2658e07');
 EOF
-    echo "Added 3 test users:"
+    echo "Added admin to users:"
     sqlite3 "$DB_FILE" "SELECT id, username FROM users;"
 }
 

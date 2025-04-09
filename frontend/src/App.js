@@ -9,6 +9,7 @@ import SignupPage from './signup.js'
 import SettingsPage from './settings.js';
 import ExistingChatPage from './existingChatScreen.js';
 import { LogUserProvider } from './context.js';
+import InsertExcel from './InsertExcel.js';
 // import ProtectedRoute from './ProtectedRoute';
 
 const App = () => {
@@ -21,6 +22,7 @@ const App = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/existing-chat" element={<ExistingChatPage />} />
+          <Route path="/upload-excel" element={<InsertExcel/>} />
 
           {/* Protected Routes - Only accessible when authenticated */}
           {/* <Route element={<ProtectedRoute />}> */}
@@ -50,6 +52,15 @@ const App = () => {
               <>
                 <MenuBar />
                 <SettingsPage />
+              </>
+            }
+          />
+          <Route
+            path="/upload-excel"
+            element={
+              <>
+                <MenuBar />
+                <InsertExcel />
               </>
             }
           />
