@@ -3,7 +3,7 @@ from database import get_db
 from flask import Blueprint
 import flask
 import json
-import datetime
+from datetime import datetime, timezone
 import pdbp
 
 info_bank = Blueprint('info_bank', __name__)
@@ -89,7 +89,8 @@ def see_chat_with_chat_id(username, chat_id):
                                (username, chat_id))  # same thing here
                 conversation = dict(cursor.fetchone())
                 if conversation:
-                    conversation = json.loads(conversation)  # this turns the text into a list
+                    # breakpoint()
+                    conversation = json.loads(conversation["conversation_data"])  # this turns the text into a list
 
                     # TODO: implement form in frontend to exctract user_prompt and bot_response
                     user_prompt = ""
@@ -98,7 +99,7 @@ def see_chat_with_chat_id(username, chat_id):
                     conversation = json.dumps(conversation)
 
                     cursor.execute("UPDATE user_conversations SET conversation_data = ?, updated_at = ? WHERE id = ?",
-                                   (conversation, datetime.now(), chat_id))
+                                   (conversation, datetime.now(timezone.utc), chat_id))
                     conn.commit()
                     return flask.jsonify({"success": True,
                                           "message": "Prompt and response added to conversation"}), 201

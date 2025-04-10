@@ -78,7 +78,6 @@ CORS(
 )
 # CORS(app, resources={r"/*": {"origins": "*"}})
 
-# app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(auth_bp)
 app.register_blueprint(info_bank)
 app.register_blueprint(upload_excel_bp)
@@ -206,16 +205,18 @@ def chat(username):
         raw_response = agent_with_chat_history.invoke({"input": user_input}, {'configurable': {'session_id': flask.session["session_id"]}})
         final_response = extract_output(raw_response.get("output", ""))
         # breakpoint()
-        if "conversation_id" not in flask.session:
-            flask.session["conversation_id"] = str(uuid.uuid4())
-            conversation_id = flask.session["conversation_id"]
-            # username = flask.session.get("username")
-            flask.session.modified = True
-            # breakpoint()
+        # if "conversation_id" not in flask.session:
+        #     flask.session["conversation_id"] = str(uuid.uuid4())
+        conversation_id = str(uuid.uuid4())
+        # username = flask.session.get("username")
+        # flask.session.modified = True
+        # breakpoint()
         Thread(target=save_conversation, args=(username,
                 conversation_id,
                 user_input,
                 final_response)).start()
+        
+        # return redirect to existing chat
         return jsonify({"response": final_response})
 
     except Exception as e:

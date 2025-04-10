@@ -15,7 +15,7 @@ const ExistingChatPage = () => {
     const [inputValue, setInputValue] = useState('');
     const navigate = useNavigate();
 
-    // const {username} = useContext(LogUserContext);
+    const {username} = useContext(LogUserContext);
     // 1. TODO: Add Back button to home page
     // 2. TODO: ...
 
@@ -36,7 +36,7 @@ const ExistingChatPage = () => {
             setInputValue('');
 
             try {
-                const response = await axios.post(`http://localhost:5001/info_bank/chat/${existingChat.id}`, {
+                const response = await axios.post(`http://localhost:5001/info_bank/${username}/chat/${existingChat.id}`, {
                     message: inputValue,
                     method: "POST",
                     credentials: 'include',
