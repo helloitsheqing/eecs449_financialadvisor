@@ -4,7 +4,8 @@ import flask
 from io import BytesIO
 import os
 from werkzeug.utils import secure_filename
-
+import openpyxl
+import xlrd
 
 
 upload_excel_bp = Blueprint('upload_excel_bp', __name__)
@@ -47,12 +48,11 @@ def handle_upload_excel():
         return flask.jsonify({"success": False, "message": "Unsupported file format"}), 400
     
 
-    processed_data = df.describe().to_dict()
+    processed_data = df.to_dict()
 
-    breakpoint()
+    # breakpoint()
+    return chatbot_handle_excel_file(processed_data, prompt)
 
     
-
-    # print("prompt: ", prompt)
-    # print("file: ", file)
-    # return
+def chatbot_handle_excel_file(data, prompt):
+    return
