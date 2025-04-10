@@ -1,62 +1,82 @@
 // ChatPage.js
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
 import LogUserContext from './contexts/context.js';
 import ExistingChatContext from './contexts/existingChatContext';
 import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+
 
 const ExistingChatPage = () => {
-    const { existingChat, setExistingChat } = useContext(ExistingChatContext);
-    console.log("existingChat", existingChat);
-    console.log("existingChat.conversation_data", existingChat.conversation_data);
-    const [messages, setMessages] = useState(existingChat.conversation_data);
-    console.log("messages", messages);
-    const [inputValue, setInputValue] = useState('');
+    const location = useLocation();
     const navigate = useNavigate();
+    const { existingChat, setExistingChat } = useContext(ExistingChatContext);
+    const { username } = useContext(LogUserContext);
+    
+    // State initialization
+    const [conversationId, setConversationId] = useState(null);
+    const [messages, setMessages] = useState([]);
+    const [inputValue, setInputValue] = useState('');
 
-    const {username} = useContext(LogUserContext);
-    // 1. TODO: Add Back button to home page
-    // 2. TODO: ...
-
-    console.log(messages);
-
-    const handleBack = async () => {
-        setExistingChat(-1); // clear context
-        navigate('/infobank');
-    };
+    // Handle both context and location state
+    useEffect(() => {
+        if (location.state?.fromChat) {
+            // Coming from default chat
+            setConversationId(location.state.conversationId);
+            setMessages(location.state.initialMessages);
+        } else if (existingChat?.id) {
+            // Coming from InfoBank
+            setConversationId(existingChat.id);
+            setMessages(existingChat.conversation_data);
+        }
+        console.log("conversation id:", conversationId);
+        console.log("username:", username);
+    }, [location.state, existingChat]);
 
     const handleSend = async () => {
-        if (inputValue.trim() !== '') {
-            setMessages((prevMessages) => [
-                ...prevMessages,
-                { text: inputValue, sender: 'user' },
-            ]);
-            console.log(messages);
+        if (inputValue.trim() !== ''){
+
             setInputValue('');
 
             try {
-                const response = await axios.post(`http://localhost:5001/info_bank/${username}/chat/${existingChat.id}`, {
+                // Add user message immediately
+                setMessages(prev => [...prev, { text: inputValue, sender: 'user' }]);
+                
+                const response = await axios.post(`http://localhost:5001/info_bank/${username}/chat/${conversationId}`, {
                     message: inputValue,
-                    method: "POST",
-                    credentials: 'include',
+                    // conversation_id: conversationId,
+                    // username: username
+                }, {
+                    withCredentials: true
                 });
 
-                const botResponse = response.data.response;
-
-                setMessages((prevMessages) => [
-                    ...prevMessages,
-                    { text: botResponse, sender: 'bot' },
+                // Add bot response
+                setMessages(prev => [
+                    ...prev,
+                    { text: response.data.response, sender: 'bot' }
                 ]);
+                
+                setInputValue('');
+
             } catch (error) {
                 console.error('Error:', error);
-                setMessages((prevMessages) => [
-                    ...prevMessages,
-                    { text: 'Error: Failed to get response from the bot.', sender: 'bot' },
+                setMessages(prev => [
+                    ...prev,
+                    { text: 'Error: Failed to get response', sender: 'bot' }
                 ]);
             }
         }
     };
+
+    const handleBack = () => {
+        if (location.state?.fromChat) {
+            navigate('/chat');  // Back to default chat
+        } else {
+            navigate('/infobank');  // Back to InfoBank
+        }
+        setExistingChat(null);
+    };
+
 
     return (
         <div style={styles.container}>

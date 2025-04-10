@@ -5,6 +5,7 @@ import flask
 import json
 from datetime import datetime, timezone
 import pdbp
+from chatbot import get_chatbot_response
 
 info_bank = Blueprint('info_bank', __name__)
 
@@ -85,16 +86,15 @@ def see_chat_with_chat_id(username, chat_id):
                                           "message": "Conversation not found"}), 404
                 
             elif flask.request.method == "POST":
+                # breakpoint()
                 cursor.execute("SELECT conversation_data FROM user_conversations WHERE username = ? AND id = ?", 
                                (username, chat_id))  # same thing here
                 conversation = dict(cursor.fetchone())
                 if conversation:
                     # breakpoint()
                     conversation = json.loads(conversation["conversation_data"])  # this turns the text into a list
-
-                    # TODO: implement form in frontend to exctract user_prompt and bot_response
-                    user_prompt = ""
-                    bot_response = ""
+                    user_prompt = flask.request.get_json().get('message')
+                    bot_response = get_chatbot_response(user_prompt)
                     conversation.append({"prompt": user_prompt, "response": bot_response})
                     conversation = json.dumps(conversation)
 

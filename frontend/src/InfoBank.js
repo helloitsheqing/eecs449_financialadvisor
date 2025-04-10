@@ -14,6 +14,7 @@ const InfoBankPage = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        console.log("username: ", username);
         const fetchChats = async () => {
             try {
                 const response = await fetch(`http://localhost:5001/info_bank/${username}/chats`, {

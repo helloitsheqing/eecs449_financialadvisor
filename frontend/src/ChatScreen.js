@@ -1,43 +1,72 @@
 // ChatPage.js
 import React, { useContext, useState } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
-import LogUserContext from './contexts/context';
+import { useNavigate } from 'react-router-dom';
+import LogUserContext from './contexts/context.js';
 
 const ChatPage = () => {
-    const [messages, setMessages] = useState([]);
-    const [inputValue, setInputValue] = useState('');
-
+    const navigate = useNavigate();
     const { username } = useContext(LogUserContext);
+    const [inputValue, setInputValue] = useState('');
+    
+    // Initialize messages state with empty array
+    const [messages, setMessages] = useState([]);
 
     const handleSend = async () => {
-        if (inputValue.trim() !== '') {
-            setMessages((prevMessages) => [
-                ...prevMessages,
-                { text: inputValue, sender: 'user' },
-            ]);
+        if (inputValue.trim() !== ''){
+            // setMessages((prevMessages) => [
+            //     ...prevMessages,
+            //     { text: inputValue, sender: 'user' },
+            // ]);
             setInputValue('');
 
             console.log(messages); // state
 
             try {
+                // Generate conversation ID only once per conversation
+                
+                // Add user message immediately to local state
+                setMessages(prev => [
+                    ...prev,
+                    { text: inputValue, sender: 'user' }
+                ]);
+
                 const response = await axios.post(`http://localhost:5001/chat/${username}`, {
                     message: inputValue,
-                    method: "POST",
-                    credentials: 'include',
+                    // conversation_id: conversationId,
+                    username: username
+                }, {
+                    withCredentials: true
                 });
 
-                const botResponse = response.data.response;
-
-                setMessages((prevMessages) => [
-                    ...prevMessages,
-                    { text: botResponse, sender: 'bot' },
+                // Add bot response to local state
+                setMessages(prev => [
+                    ...prev,
+                    { 
+                        text: response.data.response, 
+                        sender: 'bot',
+                        // conversationId
+                    }
                 ]);
+
+                // Handle first message redirect
+                navigate('/existing-chat', {
+                    state: {
+                        fromChat: true,
+                        conversationId: response.data.conversation_id,
+                        initialMessages: [
+                            { text: inputValue, sender: 'user' },
+                            { text: response.data.response, sender: 'bot' }
+                        ]
+                    }
+                });
+                setInputValue('');
+
             } catch (error) {
                 console.error('Error:', error);
-                setMessages((prevMessages) => [
-                    ...prevMessages,
-                    { text: 'Error: Failed to get response from the bot.', sender: 'bot' },
+                setMessages(prev => [
+                    ...prev,
+                    { text: 'Error: Failed to get response', sender: 'bot' }
                 ]);
             }
         }
@@ -46,6 +75,7 @@ const ChatPage = () => {
     return (
         <div style={styles.container}>
             <div style={styles.chatWindow}>
+                {/* Safe mapping since messages is always an array */}
                 {messages.map((message, index) => (
                     <div
                         key={index}
@@ -75,6 +105,7 @@ const ChatPage = () => {
     );
 };
 
+// Your existing styles object remains the same
 const styles = {
     container: {
         display: 'flex',
@@ -131,12 +162,6 @@ const styles = {
         border: 'none',
         borderRadius: '5px',
         cursor: 'pointer',
-        fontSize: '16px',
-    },
-    link: {
-        marginTop: '10px',
-        textDecoration: 'none',
-        color: '#4caf50',
         fontSize: '16px',
     }
 };
