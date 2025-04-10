@@ -2,14 +2,29 @@
 import React, { useContext, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import LogUserContext from './context';
+import LogUserContext from './contexts/context.js';
+import ExistingChatContext from './contexts/existingChatContext';
+import { useNavigate } from 'react-router-dom';
 
-const ExistingChatPage = ({ existingMessages }) => {
-    console.log("existing messages:", existingMessages);
-    const [messages, setMessages] = useState(Array.isArray(existingMessages) ? existingMessages : []);
+const ExistingChatPage = () => {
+    const { existingChat, setExistingChat } = useContext(ExistingChatContext);
+    console.log("existingChat", existingChat);
+    console.log("existingChat.conversation_data", existingChat.conversation_data);
+    const [messages, setMessages] = useState(existingChat.conversation_data);
+    console.log("messages", messages);
     const [inputValue, setInputValue] = useState('');
+    const navigate = useNavigate();
 
     // const {username} = useContext(LogUserContext);
+    // 1. TODO: Add Back button to home page
+    // 2. TODO: ...
+
+    console.log(messages);
+
+    const handleBack = async () => {
+        setExistingChat(-1); // clear context
+        navigate('/infobank');
+    };
 
     const handleSend = async () => {
         if (inputValue.trim() !== '') {
@@ -17,12 +32,13 @@ const ExistingChatPage = ({ existingMessages }) => {
                 ...prevMessages,
                 { text: inputValue, sender: 'user' },
             ]);
+            console.log(messages);
             setInputValue('');
 
             try {
-                const response = await axios.post(`http://localhost:5001/info_bank/chat/${messages.id}`, {
+                const response = await axios.post(`http://localhost:5001/info_bank/chat/${existingChat.id}`, {
                     message: inputValue,
-                    method: "POST", 
+                    method: "POST",
                     credentials: 'include',
                 });
 
@@ -42,85 +58,60 @@ const ExistingChatPage = ({ existingMessages }) => {
         }
     };
 
-    // return (
-    //     <div style={styles.container}>
-    //         <div style={styles.chatWindow}>
-    //             {messages.map((message, index) => (
-    //                 <div
-    //                     key={index}
-    //                     style={{
-    //                         ...styles.message,
-    //                         ...(message.sender === 'user' ? styles.userMessage : styles.botMessage),
-    //                     }}
-    //                 >
-    //                     {message.text}
-    //                 </div>
-    //             ))}
-    //         </div>
-    //         <div style={styles.inputContainer}>
-    //             <input
-    //                 type="text"
-    //                 value={inputValue}
-    //                 onChange={(e) => setInputValue(e.target.value)}
-    //                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-    //                 style={styles.input}
-    //                 placeholder="Type your message..."
-    //             />
-    //             <button onClick={handleSend} style={styles.sendButton}>
-    //                 Send
-    //             </button>
-    //         </div>
-    //     </div>
-    // );
     return (
         <div style={styles.container}>
+            <div style={styles.header}>
+                <button style={styles.backButton} onClick={handleBack}>
+                    ← Back
+                </button>
+            </div>
             <div style={styles.chatWindow}>
                 {messages.map((message, index) => (
-                    // Each conversation exchange (prompt + response)
-                    <div key={index} style={styles.exchangeContainer}>
-                        {/* User Prompt */}
-                        <div
-                            style={{
-                                ...styles.message,
-                                ...styles.userMessage
-                            }}
-                        >
-                            <strong>User:</strong> {message.prompt}
-                        </div>
-                        
-                        {/* Bot Response */}
-                        <div
-                            style={{
-                                ...styles.message,
-                                ...styles.botMessage
-                            }}
-                        >
-                            <strong>Bot:</strong> {message.response}
-                        </div>
+                    <div
+                        key={index}
+                        style={{
+                            ...styles.message,
+                            ...(message.sender === 'user' ? styles.userMessage : styles.botMessage),
+                        }}
+                    >
+                        {message.text}
                     </div>
                 ))}
             </div>
-            {/* Remove input section if this is read-only */}
-            {!existingMessages && (
-                <div style={styles.inputContainer}>
-                    <input
-                        type="text"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                        style={styles.input}
-                        placeholder="Type your message..."
-                    />
-                    <button onClick={handleSend} style={styles.sendButton}>
-                        Send
-                    </button>
-                </div>
-            )}
+            <div style={styles.inputContainer}>
+                <input
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                    style={styles.input}
+                    placeholder="Type your message..."
+                />
+                <button onClick={handleSend} style={styles.sendButton}>
+                    Send
+                </button>
+            </div>
         </div>
     );
 };
 
 const styles = {
+    header: {
+        display: 'flex',
+        alignItems: 'center',
+        padding: '10px 15px',
+        backgroundColor: '#c8e6c9',
+        borderBottom: '1px solid #a5d6a7',
+    },
+
+    backButton: {
+        backgroundColor: 'transparent',
+        border: 'none',
+        color: '#2e7d32',
+        fontSize: '16px',
+        cursor: 'pointer',
+        fontWeight: 'bold',
+    },
     exchangeContainer: {
         marginBottom: '20px',
     },

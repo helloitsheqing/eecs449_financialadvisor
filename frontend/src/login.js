@@ -1,11 +1,11 @@
 import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './HomePage.css';
-import LogUserContext from './context.js';
+import LogUserContext from './contexts/context.js';
 
 const LoginPage = () => {
     const navigate = useNavigate();
-    const {setUsername} = useContext(LogUserContext);
+    const { setUsername } = useContext(LogUserContext);
     const [formData, setFormData] = useState({
         username: '',
         password: ''
@@ -62,14 +62,14 @@ const LoginPage = () => {
         <div className="container">
             <h1>Laughing Stocks</h1>
             <h2>Your Financial Advisor for Less Stress and More Success</h2>
-            
+
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
                     <label htmlFor="username">Username</label>
-                    <input 
-                        type="text" 
-                        id="username" 
-                        name="username" 
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
                         value={formData.username}
                         onChange={handleInputChange}
                         required
@@ -77,10 +77,10 @@ const LoginPage = () => {
                 </div>
                 <div className="form-group">
                     <label htmlFor="password">Password</label>
-                    <input 
-                        type="password" 
-                        id="password" 
-                        name="password" 
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
                         value={formData.password}
                         onChange={handleInputChange}
                         required
