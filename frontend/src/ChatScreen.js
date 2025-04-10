@@ -2,13 +2,13 @@
 import React, { useContext, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import LogUserContext from './context';
+import LogUserContext from './contexts/context';
 
 const ChatPage = () => {
     const [messages, setMessages] = useState([]);
     const [inputValue, setInputValue] = useState('');
 
-    const {username} = useContext(LogUserContext);
+    const { username } = useContext(LogUserContext);
 
     const handleSend = async () => {
         if (inputValue.trim() !== '') {
@@ -18,10 +18,12 @@ const ChatPage = () => {
             ]);
             setInputValue('');
 
+            console.log(messages); // state
+
             try {
                 const response = await axios.post(`http://localhost:5001/chat/${username}`, {
                     message: inputValue,
-                    method: "POST", 
+                    method: "POST",
                     credentials: 'include',
                 });
 

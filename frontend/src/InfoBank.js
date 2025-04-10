@@ -2,12 +2,15 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ExistingChatPage from './existingChatScreen.js';
-import LogUserContext from './context.js';
+import ExistingChatContext from './contexts/existingChatContext.js';
+import LogUserContext from './contexts/context.js';
+
 
 const InfoBankPage = () => {
     const [savedChats, setSavedChats] = useState([]);
     const [selectedChat, setSelectedChat] = useState(null);
-    const {username} = useContext(LogUserContext);
+    const { username } = useContext(LogUserContext);
+    const { setExistingChat } = useContext(ExistingChatContext);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -47,7 +50,7 @@ const InfoBankPage = () => {
                 }
             });
 
-            if (!response.ok){
+            if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
@@ -58,10 +61,11 @@ const InfoBankPage = () => {
         } catch (error) {
             console.error("Error clearing chats:", error);
             alert('Failed to clear chats. Please try again.');
-        }    
+        }
     };
 
     const handleViewChat = async (chatId) => {
+        console.log('click');
         try {
             const response = await fetch(`http://localhost:5001/info_bank/${username}/chat/${chatId}`, {
                 method: "GET",
@@ -79,7 +83,38 @@ const InfoBankPage = () => {
 
             const result = await response.json();
             if (result.success) {
+                // NOTE:
+                // current format:
+                // [
+                // {prompt: "question", response: "response"}
+                // ]
+                // parse result data into this format
+                // [
+                // { text: "question", sender: "user", }, { text: "response", sender: "bot", }, 
+                // ]
+
+                function parseChatData(data) {
+                    const parsed = [];
+
+                    data.forEach(pair => {
+                        parsed.push({ text: pair.prompt, sender: "user" });
+                        parsed.push({ text: pair.response, sender: "bot" });
+                    });
+
+                    return parsed;
+                }
+                console.log("prev");
+                console.log(result.data.conversation_data);
+                const parsedData = parseChatData(result.data.conversation_data);
+                console.log("current");
+                console.log(parsedData);
+
+                // change result.data.conversation_data to parsedData
+                result.data.conversation_data = parsedData
                 setSelectedChat(result.data);
+
+                setExistingChat(result.data);
+
                 navigate('/existing-chat');
                 console.log("result: ", result);
             }
@@ -98,7 +133,7 @@ const InfoBankPage = () => {
                     <ul style={styles.chatListUl}>
                         {savedChats.map((chat) => (
                             <li key={chat.id} style={styles.chatListItem}>
-                                <button 
+                                <button
                                     style={styles.chatTitleButton}
                                     onClick={() => handleViewChat(chat.id)}
                                 >
@@ -109,7 +144,7 @@ const InfoBankPage = () => {
                     </ul>
                 )}
             </div>
-            
+
             {selectedChat && (
                 <div style={styles.chatView}>
                     <h3>{selectedChat.conversation_title || "Untitled Conversation"}</h3>
@@ -121,13 +156,12 @@ const InfoBankPage = () => {
                                 <strong>Bot:</strong> {message.response}
                             </div>
                         ))} */}
-                        <ExistingChatPage existingMessages={selectedChat?.conversation_data || []}/>
                     </div>
                 </div>
             )}
-            
+
             {savedChats.length > 0 && (
-                <button style={styles.clearButton} onClick={handleClearChat}> 
+                <button style={styles.clearButton} onClick={handleClearChat}>
                     Clear All Chats
                 </button>
             )}
@@ -135,6 +169,7 @@ const InfoBankPage = () => {
     );
 };
 
+// <ExistingChatPage existingMessages={selectedChat?.conversation_data || []} />
 const styles = {
     container: {
         padding: '20px',
