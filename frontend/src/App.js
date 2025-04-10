@@ -25,6 +25,7 @@ const App = () => {
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/existing-chat" element={<ExistingChatPage />} />
             <Route path="/upload-excel" element={<InsertExcel/>} />
+            <Route path="/settings" element={<SettingsPage/>} />
 
             {/* Protected Routes - Only accessible when authenticated */}
             {/* <Route element={<ProtectedRoute />}> */}
