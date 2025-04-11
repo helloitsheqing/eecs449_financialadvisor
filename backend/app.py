@@ -87,7 +87,7 @@ def chat(username):
             final_response))
         
         conversation_thread.start()
-        conversation_thread.join()
+        conversation_thread.join()  # this makes things slightly better, but might actually just be redundant
         
         return jsonify({
             "response": final_response,

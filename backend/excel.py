@@ -2,7 +2,9 @@ from flask import Blueprint
 import pandas
 import flask
 from io import BytesIO
+from chatbot import get_chatbot_response
 import os
+import json
 from werkzeug.utils import secure_filename
 import openpyxl
 import xlrd
@@ -48,11 +50,38 @@ def handle_upload_excel():
         return flask.jsonify({"success": False, "message": "Unsupported file format"}), 400
     
 
-    processed_data = df.to_dict()
+    processed_data = json.dumps(df.to_dict())
 
     # breakpoint()
     return chatbot_handle_excel_file(processed_data, prompt)
 
+
+SPREADSHEET_PROMPT = """OK, so you are about to receive a spreadsheet that was translated to a
+                        JSON dictionary as well as prompt that was given by the user, indicating why they
+                        gave you this spreadsheet and what they want you to do with it. Your job is to follow
+                        the user's instructions and produce a (potentially) updated spreadsheet or provide feedback on it.
+                        So basically you have to do one of two things: either edit the spreadsheet data in the JSON as you
+                        see fit or just give feedback on it. If you decide to just give feedback on it for whatever
+                        reason, indicate it to use using the string 'FEEDBACK' followed by your actual feedback. This way,
+                        we will know that you only decided to provide feedback on it and we can handle it differently. 
+                        Here is the user prompt, followed by the jsonified data:\n
+                    """
+
     
 def chatbot_handle_excel_file(data, prompt):
-    return
+    prompt = SPREADSHEET_PROMPT + prompt + "Data: " + data
+    response = get_chatbot_response(prompt, 0)
+
+    if "FEEDBACK" in response:
+        response = response.replace("FEEDBACK", "")
+        if response.startswith(":"):
+            response = response.replace(":", "")
+        return response
+
+    # response should be a stringified json
+    response = json.loads(response)
+
+    return response
+
+
+# these returns may (probably will be) flawed af but fuck it we ball for now
