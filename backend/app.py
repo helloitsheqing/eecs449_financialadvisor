@@ -79,15 +79,15 @@ def chat(username):
     # breakpoint()
     try:
         user_input = request.get_json().get('message')
-        final_response = get_chatbot_response(user_input)
         conversation_id = str(uuid.uuid4())
+        final_response = get_chatbot_response(user_input, conversation_id)
         conversation_thread = Thread(target=save_conversation, args=(username,
-                conversation_id,
-                user_input,
-                final_response))
+            conversation_id,
+            user_input,
+            final_response))
         
         conversation_thread.start()
-        # conversation_thread.join()
+        conversation_thread.join()
         
         return jsonify({
             "response": final_response,
@@ -110,8 +110,8 @@ def save_conversation(username, conversation_id, prompt, response):
                 conn.execute("UPDATE user_conversations SET conversation_data = ?, updated_at = ? WHERE id = ?",
                              (json.dumps(messages), datetime.now(timezone.utc), conversation_id))
             else:
-                # conversation_title = generate_conversation_title(prompt, response)  # this is breaking
-                conversation_title = "New Conversation"
+                conversation_title = generate_conversation_title(prompt, response, conversation_id)  # this is breaking
+                # conversation_title = "New Conversation"
                 conn.execute("INSERT INTO user_conversations (id, username, conversation_title, conversation_data) VALUES (?, ?, ?, ?)",
                              (conversation_id, username, conversation_title,  # title will be changed later
                               json.dumps([{"prompt": prompt, "response": response}])))

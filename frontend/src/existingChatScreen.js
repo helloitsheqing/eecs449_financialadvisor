@@ -44,6 +44,7 @@ const ExistingChatPage = () => {
 
                 const response = await axios.post(`http://localhost:5001/info_bank/${username}/chat/${conversationId}`, {
                     message: inputValue,
+                    // agent_model: "deepseek"
                     // conversation_id: conversationId,
                     // username: username
                 }, {

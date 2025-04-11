@@ -16,7 +16,7 @@ warnings.filterwarnings("ignore", category=UserWarning, message="API key must be
 
 
 AGENT_MODEL = "deepseek-r1:1.5b"
-
+# AGENT_MODEL = "deepseek-r1:7b"  # DO NOT RUN THIS
 
 def extract_output(input_text: str):
     """ Function to extract output after <think></think> tags from Agent's output response. """
@@ -59,12 +59,13 @@ prompt = hub.pull("hwchase17/react")
 llm = OllamaLLM(model=AGENT_MODEL)
 
 
-def get_chatbot_response(user_input):
+def get_chatbot_response(user_input, conversation_id):
+    # breakpoint()
     if not user_input:
         return jsonify({"error": "No message provided"}), 400
 
     # Create memory specific to user's session
-    memory = ChatMessageHistory(session_id=flask.session['session_id'])  # TODO: look at incorporating memory?
+    memory = ChatMessageHistory(session_id=conversation_id)  # TODO: look at incorporating memory?
 
     # Create agent and executor fresh each time (ensures separation per request)
     agent = create_react_agent(llm=llm, tools=api_tools, prompt=prompt) # tools: api_tools
@@ -82,13 +83,13 @@ def get_chatbot_response(user_input):
     )
 
     # Invoke the agent
-    raw_response = agent_with_chat_history.invoke({"input": user_input}, {'configurable': {'session_id': flask.session["session_id"]}})
+    raw_response = agent_with_chat_history.invoke({"input": user_input}, {'configurable': {'session_id': conversation_id}})
     final_response = extract_output(raw_response.get("output", ""))
 
     return final_response
 
 
-def generate_conversation_title(user_input, bot_response):
+def generate_conversation_title(user_input, bot_response, conversation_id):
     agent = create_react_agent(llm=llm, tools=api_tools, prompt=prompt) # tools: api_tools
     agent_executor = AgentExecutor(agent=agent, 
                             tools=api_tools, 
@@ -108,6 +109,6 @@ def generate_conversation_title(user_input, bot_response):
                                                             Q: {user_input}\n
                                                             A: {bot_response}
                                                             """},
-                                                  {'configurable': {'session_id': flask.session["session_id"]}})  # ??????????????
+                                                  {'configurable': {'session_id': conversation_id}})  # ??????????????
     final_response = extract_output(raw_response.get("output", ""))
     return final_response
