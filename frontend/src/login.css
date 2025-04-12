@@ -1,0 +1,39 @@
+.pink { color: #e26da0; }
+.orange { color: #f79733; }
+.purple { color: #7c5fdd; }
+.blue { color: #3a91f7; }
+.green { color: #3db85d; }
+
+h1 {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+.laughing-stock {
+    margin-top: 10px;
+    margin-bottom: 0px;
+}
+
+
+.fin-ai{
+    margin-bottom: 0%;
+}
+
+.pt2{
+    margin-top: 0%;
+    margin-bottom: 20px;
+}
+
+h2 {
+    font-size: 30px;
+    color: #333;
+    margin-bottom: 0px;
+    text-align: center;
+    width: 80%;
+}
+
+.login { 
+    color: white;
+    background-color: #e26da0;
+    padding: 10px 30px;
+ }

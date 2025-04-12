@@ -19,11 +19,13 @@ const HomePage = () => {
 
     return (
         <div className="container">
-            <h1>Laughing Stocks</h1>
-            <h2>Your Financial Advisor for Less Stress and More Success</h2>
-            <img src="piggy.png" alt="Piggy Bank" style={{ width: '100px', height: 'auto', marginBottom: '20px' }} />
-            <button onClick={handleLoginClick}>Login</button>
-            <button onClick={handleSignUpClick} className="btn btn-signup">Sign Up</button>
+            <h1 class="welcome">Welcome to</h1>
+            <h1 class="laughing-stock"><span class="pink">Laughing</span> <span class="orange">Stocks</span></h1>
+            <h2 class="fin-ai">a financial <span class="purple">A</span>dv<span class="purple">I</span>sor</h2>
+            <h2 class="pt2">for <span class="blue">Less Stress</span> and <span class="green">More Success</span></h2>
+            <img src="piggy.png" alt="Piggy Bank" style={{ width: '200px', height: 'auto', marginBottom: '20px' }} />
+            <button class="login" onClick={handleLoginClick}>Login</button>
+            <button class="signup" onClick={handleSignUpClick}>Sign Up</button>
         </div>
     );
 };

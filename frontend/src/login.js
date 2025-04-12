@@ -60,12 +60,14 @@ const LoginPage = () => {
 
     return (
         <div className="container">
-            <h1>Laughing Stocks</h1>
-            <h2>Your Financial Advisor for Less Stress and More Success</h2>
+            <img src="piggy.png" alt="Piggy Bank" style={{ width: '100px', height: 'auto', marginBottom: '20px' }} />
+            <h1 class="laughing-stock"><span class="pink">Laughing</span> <span class="orange">Stocks</span></h1>
+            <h2 class="fin-ai">a financial <span class="purple">A</span>dv<span class="purple">I</span>sor</h2>
+            <h2 class="pt2">for <span class="blue">Less Stress</span> and <span class="green">More Success</span></h2>
 
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
-                    <label htmlFor="username">Username</label>
+                    <label htmlFor="username">Username </label>
                     <input
                         type="text"
                         id="username"
@@ -75,8 +77,9 @@ const LoginPage = () => {
                         required
                     />
                 </div>
+                <p></p>
                 <div className="form-group">
-                    <label htmlFor="password">Password</label>
+                    <label htmlFor="password">Password </label>
                     <input
                         type="password"
                         id="password"
@@ -87,8 +90,9 @@ const LoginPage = () => {
                     />
                 </div>
                 {error && <div className="error-message">{error}</div>}
+                <p></p>
                 <div className="form-group">
-                    <button type="submit">Login</button>
+                    <button class="login" type="submit">Login</button>
                 </div>
             </form>
         </div>
