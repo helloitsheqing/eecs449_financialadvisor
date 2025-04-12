@@ -18,6 +18,7 @@ const HomePage = () => {
 
 
     return (
+        // matches figma mockup
         <div className="container">
             <h1 class="welcome">Welcome to</h1>
             <h1 class="laughing-stock"><span class="pink">Laughing</span> <span class="orange">Stocks</span></h1>
