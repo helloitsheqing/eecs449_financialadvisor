@@ -102,9 +102,11 @@ def see_chat_with_chat_id(username, chat_id):
                                    (conversation, datetime.now(timezone.utc), chat_id))
                     conn.commit()
                     return flask.jsonify({"success": True,
-                                          "message": "Prompt and response added to conversation"}), 201
+                                          "message": "Prompt and response added to conversation",
+                                          "response": bot_response}), 201
                 else:
                     return flask.jsonify({"success": False,
-                                          "message": "Conversation not found"}), 404
+                                          "message": "Conversation not found",
+                                          "response": None}), 404
     else:
         return flask.jsonify({"success": False, "message": "Unauthorized"}), 401

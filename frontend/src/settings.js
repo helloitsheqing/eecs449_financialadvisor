@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 
 const Settings = () => {
-    const [aiModel, setAiModel] = useState('Model A');
+    const [aiModel, setAiModel] = useState('deepseek-r1:1.5b');
 
     const handleModelChange = (event) => {
         setAiModel(event.target.value);
@@ -10,11 +10,13 @@ const Settings = () => {
 
     return (
         <div style={styles.container}>
-            <h2>Settings</h2>
+            <h2>AI Model Settings</h2>
             <p>Current AI Model: {aiModel}</p>
             <select onChange={handleModelChange} value={aiModel} style={styles.select}>
-                <option value="Model A">Model A</option>
-                <option value="Model B">Model B</option>
+                <option value="deepseek-r1:1.5b">DeepSeek R1</option>
+                <option value="gemma3:1b">Gemma 3</option>
+                <option value="mistral">Mistral</option>
+                <option value="llama3.3">Llama 3</option>
             </select>
         </div>
     );

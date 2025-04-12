@@ -12,7 +12,7 @@ const ExistingChatPage = () => {
     const navigate = useNavigate();
     const { existingChat, setExistingChat } = useContext(ExistingChatContext);
     const { username } = useContext(LogUserContext);
-    
+
     // State initialization
     const [conversationId, setConversationId] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -34,28 +34,31 @@ const ExistingChatPage = () => {
     }, [location.state, existingChat]);
 
     const handleSend = async () => {
-        if (inputValue.trim() !== ''){
+        if (inputValue.trim() !== '') {
 
             setInputValue('');
 
             try {
                 // Add user message immediately
                 setMessages(prev => [...prev, { text: inputValue, sender: 'user' }]);
-                
+
                 const response = await axios.post(`http://localhost:5001/info_bank/${username}/chat/${conversationId}`, {
                     message: inputValue,
+                    // agent_model: "deepseek"
                     // conversation_id: conversationId,
                     // username: username
                 }, {
                     withCredentials: true
                 });
 
+                console.log("response", response);
+
                 // Add bot response
                 setMessages(prev => [
                     ...prev,
                     { text: response.data.response, sender: 'bot' }
                 ]);
-                
+
                 setInputValue('');
 
             } catch (error) {

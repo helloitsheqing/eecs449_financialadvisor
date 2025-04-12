@@ -22,7 +22,8 @@ const InfoBankPage = () => {
                     credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    agent_model: "deepseek"
                 });
 
                 if (!response.ok) {
