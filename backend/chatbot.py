@@ -105,30 +105,36 @@ def get_chatbot_response(user_input, conversation_id):
     # breakpoint()
     if not user_input:
         return jsonify({"error": "No message provided"}), 400
+    
+    # Hard-coded check for "stock price"
+    stock_price_match = re.search(r"stock price(?: of| for)?\s+([A-Za-z]{1,5})", user_input, re.IGNORECASE)
+    if stock_price_match:
+        symbol = stock_price_match.group(1).upper()
+        price = get_stock_price(symbol)
+        return f"The current price of {symbol} is ${price}."
+    else:
+        # Create memory specific to user's session
+        memory = ChatMessageHistory(session_id=conversation_id)  
 
-    # Create memory specific to user's session
-    memory = ChatMessageHistory(session_id=conversation_id)  # TODO: look at incorporating memory?
+        # Create agent and executor fresh each time (ensures separation per request)
+        agent = create_react_agent(llm=llm, tools=api_tools, prompt=prompt) # tools: api_tools
+        agent_executor = AgentExecutor(agent=agent, 
+                                tools=api_tools, 
+                                handle_parsing_errors=True,
+                                max_iterations=20, # Increased number of max iterations to avoid time out
+                                max_execution_time=120) # Increased the maximum timeout to allow for longer processing) 
 
-    # Create agent and executor fresh each time (ensures separation per request)
-    agent = create_react_agent(llm=llm, tools=api_tools, prompt=prompt) # tools: api_tools
-    agent_executor = AgentExecutor(agent=agent, 
-                            tools=api_tools, 
-                            handle_parsing_errors=True,
-                            max_iterations=20, # Increased number of max iterations to avoid time out
-                            max_execution_time=120) # Increased the maximum timeout to allow for longer processing) 
+        agent_with_chat_history = RunnableWithMessageHistory(
+            agent_executor,
+            lambda session_id: ChatMessageHistory(session_id=session_id),
+            input_messages_key="input",  # conversation_id?
+            history_messages_key="chat_history"
+        )
 
-    agent_with_chat_history = RunnableWithMessageHistory(
-        agent_executor,
-        lambda session_id: ChatMessageHistory(session_id=session_id),
-        input_messages_key="input",  # conversation_id?
-        history_messages_key="chat_history"
-    )
-
-    # Invoke the agent
-    raw_response = agent_with_chat_history.invoke({"input": user_input}, {'configurable': {'session_id': conversation_id}})
-    final_response = extract_output(raw_response.get("output", ""))
-
-    return final_response
+        # Invoke the agent
+        raw_response = agent_with_chat_history.invoke({"input": user_input}, {'configurable': {'session_id': conversation_id}})
+        final_response = extract_output(raw_response.get("output", ""))
+        return final_response
 
 
 def generate_conversation_title(user_input, bot_response, conversation_id):
