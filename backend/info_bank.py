@@ -94,7 +94,7 @@ def see_chat_with_chat_id(username, chat_id):
                     # breakpoint()
                     conversation = json.loads(conversation["conversation_data"])  # this turns the text into a list
                     user_prompt = flask.request.get_json().get('message')
-                    bot_response = get_chatbot_response(user_prompt)
+                    bot_response = get_chatbot_response(user_prompt, chat_id)
                     conversation.append({"prompt": user_prompt, "response": bot_response})
                     conversation = json.dumps(conversation)
 

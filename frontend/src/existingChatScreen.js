@@ -46,7 +46,7 @@ const ExistingChatPage = () => {
                     message: inputValue,
                     // agent_model: "deepseek"
                     // conversation_id: conversationId,
-                    // username: username
+                    username: username
                 }, {
                     withCredentials: true
                 });

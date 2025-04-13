@@ -34,7 +34,7 @@ Session(app)
 CORS(
     app,
     supports_credentials=True,
-    resources={r"/*": {"origins": "*"}},
+    resources={r"/.*": {"origins": "*"}},
     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type"],
     expose_headers=["Content-Type"]
