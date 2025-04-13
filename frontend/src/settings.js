@@ -1,5 +1,6 @@
 // Settings.js
 import React, { useState } from 'react';
+import MenuBar from './MenuBar.js';
 
 const Settings = () => {
     const [aiModel, setAiModel] = useState('deepseek-r1:1.5b');
@@ -10,6 +11,7 @@ const Settings = () => {
 
     return (
         <div style={styles.container}>
+            <MenuBar></MenuBar>
             <h2>AI Model Settings</h2>
             <p>Current AI Model: {aiModel}</p>
             <select onChange={handleModelChange} value={aiModel} style={styles.select}>
@@ -24,7 +26,6 @@ const Settings = () => {
 
 const styles = {
     container: {
-        padding: '20px',
         textAlign: 'center',
     },
     select: {

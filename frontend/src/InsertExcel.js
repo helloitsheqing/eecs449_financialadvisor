@@ -1,6 +1,7 @@
 // InsertExcel.js
 import React, { useState } from 'react';
 import axios from 'axios';
+import MenuBar from './MenuBar.js';
 
 const InsertExcel = () => {
     const [selectedFile, setSelectedFile] = useState(null);
@@ -60,6 +61,7 @@ const InsertExcel = () => {
     
     return (
         <div style={styles.container}>
+            <MenuBar></MenuBar>
             <h2 style={styles.heading}>Insert Excel File</h2>
             <form onSubmit={handleSubmit} style={styles.form}>
                 <div style={styles.formGroup}>
@@ -110,9 +112,6 @@ const InsertExcel = () => {
 
 const styles = {
     container: {
-        maxWidth: '600px',
-        margin: '2rem auto',
-        padding: '2rem',
         backgroundColor: '#f8f9fa',
         borderRadius: '8px',
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)'

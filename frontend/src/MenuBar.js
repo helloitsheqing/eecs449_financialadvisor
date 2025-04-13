@@ -1,14 +1,15 @@
 // MenuBar.js
 import React from 'react';
 import { Link } from 'react-router-dom';
+import './MenuBar.css';
 
 const MenuBar = () => {
     return (
-        <div style={styles.menuBar}>
-            <Link to="/chat" style={styles.link}>Chat</Link>
-            <Link to="/infobank" style={styles.link}>Info Bank</Link>
-            <Link to="/settings" style={styles.link}>Settings</Link>
-            <Link to="/upload-excel" style={styles.link}>Upload Spreadsheet</Link>
+        <div class="topnav">
+            <Link to="/chat">Chat</Link>
+            <Link to="/infobank">Info Bank</Link>
+            <Link to="/settings">Settings</Link>
+            <Link to="/upload-excel">Upload Spreadsheet</Link>
         </div>
     );
 };
