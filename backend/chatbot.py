@@ -9,7 +9,7 @@ from langchain.tools import Tool
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain.agents import AgentExecutor, create_react_agent
 from langchain_core.runnables.history import RunnableWithMessageHistory
-
+from langchain.prompts import PromptTemplate
 
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning, message="API key must be provided when using hosted LangSmith API")
@@ -55,9 +55,51 @@ api_tools = [
 ]
 
 
-prompt = hub.pull("hwchase17/react")
+example_prompt = """You are a professional, reliable financial advisor. Answer clearly, concisely, and factually. Follow the tone and format of the examples below.
+
+Example 1:
+Q: How much should I have saved by age 30?
+A: A common guideline is to have about one year's salary saved by age 30. This includes retirement accounts like 401(k)s or IRAs. Your target may vary depending on lifestyle, career, and financial goals.
+
+Example 2:
+Q: What's the difference between a Roth IRA and a Traditional IRA?
+A: A Roth IRA is funded with after-tax dollars and grows tax-free, while a Traditional IRA is funded with pre-tax dollars and is taxed upon withdrawal. Roth is better if you expect to be in a higher tax bracket later.
+
+Example 3:
+Q: What is an emergency fund and how much do I need?
+A: An emergency fund is money set aside for unexpected expenses. A good target is 3–6 months of living expenses in a liquid, easily accessible account.
+
+Now answer the user's question below in the same tone and style.
+
+Q: {input}
+A:"""
+
+# prompt = PromptTemplate(input_variables=["input"], template=example_prompt)
+# prompt = hub.pull("hwchase17/react")
 llm = OllamaLLM(model=AGENT_MODEL)
 
+def get_financial_prompt():
+    few_shot_examples = """You are a professional, reliable financial advisor. Answer clearly, concisely, and factually. Follow the tone and format of the examples below.
+
+                        Example 1:
+                        Q: How much should I have saved by age 30?
+                        A: A common guideline is to have about one year's salary saved by age 30. This includes retirement accounts like 401(k)s or IRAs. Your target may vary depending on lifestyle, career, and financial goals.
+
+                        Example 2:
+                        Q: What's the difference between a Roth IRA and a Traditional IRA?
+                        A: A Roth IRA is funded with after-tax dollars and grows tax-free, while a Traditional IRA is funded with pre-tax dollars and is taxed upon withdrawal. Roth is better if you expect to be in a higher tax bracket later.
+
+                        Example 3:
+                        Q: What is an emergency fund and how much do I need?
+                        A: An emergency fund is money set aside for unexpected expenses. A good target is 3–6 months of living expenses in a liquid, easily accessible account.
+
+                        Now answer the user's question below in the same tone and style.
+                        """
+    
+    base_prompt = hub.pull("hwchase17/react")
+    return base_prompt.partial(prefix=few_shot_examples)
+
+prompt = get_financial_prompt()
 
 def get_chatbot_response(user_input, conversation_id):
     # breakpoint()

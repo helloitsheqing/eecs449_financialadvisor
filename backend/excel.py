@@ -69,7 +69,7 @@ SPREADSHEET_PROMPT = """OK, so you are about to receive a spreadsheet that was t
 
     
 def chatbot_handle_excel_file(data, prompt):
-    prompt = SPREADSHEET_PROMPT + prompt + "Data: " + data
+    prompt = SPREADSHEET_PROMPT + prompt + "\nData:\n" + data
     response = get_chatbot_response(prompt, 0)
 
     if "FEEDBACK" in response:
@@ -82,6 +82,5 @@ def chatbot_handle_excel_file(data, prompt):
     response = json.loads(response)
 
     return response
-
 
 # these returns may (probably will be) flawed af but fuck it we ball for now

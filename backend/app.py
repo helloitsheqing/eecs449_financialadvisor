@@ -123,4 +123,5 @@ def save_conversation(username, conversation_id, prompt, response):
 # Run the app
 if __name__ == '__main__':
     init_db()
+    # train_model(model)
     app.run(port=5001, debug=True, host='0.0.0.0')

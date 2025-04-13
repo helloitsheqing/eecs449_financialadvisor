@@ -23,7 +23,7 @@ const InfoBankPage = () => {
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    agent_model: "deepseek"
+                    // agent_model: "deepseek"
                 });
 
                 if (!response.ok) {
