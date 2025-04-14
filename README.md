@@ -6,6 +6,9 @@
 ---
 
 ### 🚀 Quick Start Guide  
+#### **Installing Requirements**
+1. Run:
+   `pip install -r requirements.txt`
 
 #### **Ollama Setup (Root Terminal)**  
 1. Run:  
