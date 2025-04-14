@@ -6,10 +6,17 @@
 ---
 
 ### 🚀 Quick Start Guide  
+#### **Installing Requirements**
+1. Run:
+   `pip install -r requirements.txt`
 
 #### **Ollama Setup (Root Terminal)**  
 1. Run:  
    `ollama pull deepseek-r1:1.5b`  
+   `ollama pull deepseek-r1:7b`  
+   `ollama pull gemma3:1b`  
+   `ollama pull mistral`  
+   `ollama pull llama3.3`  
 2. Start the server:  
    `ollama serve`  
 
