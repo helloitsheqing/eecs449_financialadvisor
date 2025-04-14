@@ -38,8 +38,8 @@ const Settings = () => {
                 <option value="deepseek-r1:7b">DeepSeek R1:7b</option>
                 <option value="gemma3:1b">Gemma 3</option>
                 <option value="mistral">Mistral</option>
-                <option value="llama3.3">Llama 3</option>
-            </select>
+                <option value="llama3.2">Llama 3</option>
+             </select>
         </div>
     );
 };
