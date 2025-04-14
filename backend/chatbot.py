@@ -1,7 +1,7 @@
 import requests
 import flask
 import os
-from flask import jsonify
+from flask import jsonify, Blueprint
 import re
 from langchain import hub
 from langchain_ollama import OllamaLLM
@@ -14,8 +14,22 @@ from langchain.prompts import PromptTemplate
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning, message="API key must be provided when using hosted LangSmith API")
 
+change_model_bp = Blueprint('change_model_bp', __name__)
 
-AGENT_MODEL = "deepseek-r1:1.5b"
+
+DEFAULT_AGENT_MODEL = "deepseek-r1:1.5b"
+
+class ModelManager:
+    def __init__(self):
+        self.llm = OllamaLLM(model=DEFAULT_AGENT_MODEL)
+    
+    def change_model(self, model_name):
+        self.llm = OllamaLLM(model=model_name)
+
+    def get_model(self):
+        return self.llm
+
+
 # AGENT_MODEL = "deepseek-r1:7b"  # DO NOT RUN THIS
 
 def extract_output(input_text: str):
@@ -39,7 +53,7 @@ def get_stock_price(symbol: str) -> str:
     if response.status_code == 200:
         data = response.json()
         try:
-            return data["Global Quote"]["05. price"]
+            return (data["Global Quote"]["05. price"])[:-2]
         except KeyError:
             return "Stock data unavailable."
     else:
@@ -76,7 +90,17 @@ A:"""
 
 # prompt = PromptTemplate(input_variables=["input"], template=example_prompt)
 # prompt = hub.pull("hwchase17/react")
-llm = OllamaLLM(model=AGENT_MODEL)
+# llm = OllamaLLM(model=AGENT_MODEL)
+model_manager = ModelManager()  # Global instance
+
+
+
+@change_model_bp.route("/change-model/<string:model>", methods=["POST"])
+def change_model(model):
+    # llm = OllamaLLM(model=model)
+    model_manager.change_model(model)
+    return jsonify({"response": "Success"}), 200
+
 
 def get_financial_prompt():
     few_shot_examples = """You are a professional, reliable financial advisor. Answer clearly, concisely, and factually. Follow the tone and format of the examples below.
@@ -117,7 +141,7 @@ def get_chatbot_response(user_input, conversation_id):
         memory = ChatMessageHistory(session_id=conversation_id)  
 
         # Create agent and executor fresh each time (ensures separation per request)
-        agent = create_react_agent(llm=llm, tools=api_tools, prompt=prompt) # tools: api_tools
+        agent = create_react_agent(llm=model_manager.get_model(), tools=api_tools, prompt=prompt) # tools: api_tools
         agent_executor = AgentExecutor(agent=agent, 
                                 tools=api_tools, 
                                 handle_parsing_errors=True,
@@ -138,7 +162,7 @@ def get_chatbot_response(user_input, conversation_id):
 
 
 def generate_conversation_title(user_input, bot_response, conversation_id):
-    agent = create_react_agent(llm=llm, tools=api_tools, prompt=prompt) # tools: api_tools
+    agent = create_react_agent(llm=model_manager.get_model(), tools=api_tools, prompt=prompt) # tools: api_tools
     agent_executor = AgentExecutor(agent=agent, 
                             tools=api_tools, 
                             handle_parsing_errors=True,

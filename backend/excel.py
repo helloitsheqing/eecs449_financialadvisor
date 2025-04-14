@@ -54,7 +54,8 @@ def handle_upload_excel():
     processed_data = json.dumps(df.to_dict())
 
     # breakpoint()
-    return chatbot_handle_excel_file(processed_data, prompt)
+    data = chatbot_handle_excel_file(processed_data, prompt)
+    return flask.jsonify({"response": "Success", "data": data}), 200
 
 
 SPREADSHEET_PROMPT = """OK, so you are about to receive a spreadsheet that was translated to a
@@ -62,8 +63,9 @@ SPREADSHEET_PROMPT = """OK, so you are about to receive a spreadsheet that was t
                         gave you this spreadsheet and what they want you to do with it. Your job is to follow
                         the user's instructions and produce a (potentially) updated spreadsheet or provide feedback on it.
                         So basically you have to do one of two things: either edit the spreadsheet data in the JSON as you
-                        see fit or just give feedback on it. If you decide to just give feedback on it for whatever
-                        reason, indicate it to use using the string 'FEEDBACK' followed by your actual feedback. This way,
+                        see fit or just give feedback on it. If you decide to change the JSON data, make sure to return a string
+                        of this JSON so that we can handle it here on our end as such. If you decide to just give feedback on it 
+                        for whatever reason, indicate it to use using the string 'FEEDBACK' followed by your actual feedback. This way,
                         we will know that you only decided to provide feedback on it and we can handle it differently. 
                         Here is the user prompt, followed by the jsonified data:\n
                     """

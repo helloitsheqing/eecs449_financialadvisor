@@ -11,51 +11,54 @@ import ExistingChatPage from './existingChatScreen.js';
 import { LogUserProvider } from './contexts/context.js';
 import { ExistingChatProvider } from './contexts/existingChatContext';
 import InsertExcel from './InsertExcel.js';
+import { ModelProvider } from './contexts/modelContext.js';
 // import ProtectedRoute from './ProtectedRoute';
 
 const App = () => {
   return (
-    <ExistingChatProvider>
-      <LogUserProvider>
-        <Router>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<HomePage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
-            <Route path="/existing-chat" element={<ExistingChatPage />} />
-            <Route path="/upload-excel" element={<InsertExcel/>} />
-            <Route path="/settings" element={<SettingsPage/>} />
+    <ModelProvider>
+      <ExistingChatProvider>
+        <LogUserProvider>
+          <Router>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<HomePage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/existing-chat" element={<ExistingChatPage />} />
+              <Route path="/upload-excel" element={<InsertExcel/>} />
+              <Route path="/settings" element={<SettingsPage/>} />
 
-            {/* Protected Routes - Only accessible when authenticated */}
-            {/* <Route element={<ProtectedRoute />}> */}
-            <Route>
-              <Route
-                path="/chat"
-                element={
-                  <>
-                    <MenuBar />
-                    <ChatPage />
-                  </>
-                }
-              />
-              <Route
-                path="/infobank"
-                element={
-                  <>
-                    <MenuBar />
-                    <InfoBankPage />
-                  </>
-                }
-              />
-            </Route>
+              {/* Protected Routes - Only accessible when authenticated */}
+              {/* <Route element={<ProtectedRoute />}> */}
+              <Route>
+                <Route
+                  path="/chat"
+                  element={
+                    <>
+                      <MenuBar />
+                      <ChatPage />
+                    </>
+                  }
+                />
+                <Route
+                  path="/infobank"
+                  element={
+                    <>
+                      <MenuBar />
+                      <InfoBankPage />
+                    </>
+                  }
+                />
+              </Route>
 
-            {/* Fallback route for unknown paths */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Router>
-      </LogUserProvider>
-    </ExistingChatProvider>
+              {/* Fallback route for unknown paths */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Router>
+        </LogUserProvider>
+      </ExistingChatProvider>
+    </ModelProvider>
   );
 };
 

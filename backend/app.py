@@ -6,7 +6,7 @@ import json
 import uuid
 import flask
 from dotenv import load_dotenv
-from chatbot import get_chatbot_response, generate_conversation_title
+from chatbot import get_chatbot_response, generate_conversation_title, change_model_bp
 from auth import auth_bp, _build_preflight_response
 from info_bank import info_bank
 from excel import upload_excel_bp
@@ -43,6 +43,7 @@ CORS(
 app.register_blueprint(auth_bp)
 app.register_blueprint(info_bank)
 app.register_blueprint(upload_excel_bp)
+app.register_blueprint(change_model_bp)
 
 
 # Assign a unique session_id to each user on first visit
