@@ -8,7 +8,7 @@
 ### 🚀 Quick Start Guide  
 #### **Installing Requirements**
 1. Run:
-   `chmod +x setup.sh`
+   `chmod +x setup.sh`  
    `./setup.sh`
 
 #### **Ollama Setup (Root Terminal)**  
