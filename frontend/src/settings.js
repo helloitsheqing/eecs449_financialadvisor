@@ -1,25 +1,31 @@
 // Settings.js
-import React, { useState } from 'react';
+import React, { createContext, useState, useContext } from 'react';
+import ModelContext from './contexts/modelPreference';
 import MenuBar from './MenuBar.js';
 
+
 const Settings = () => {
-    const [aiModel, setAiModel] = useState('deepseek-r1:1.5b');
+    const { agent_model, setAgentModel } = useContext(ModelContext);
 
     const handleModelChange = (event) => {
-        setAiModel(event.target.value);
-    };
+        setAgentModel(event.target.value);
+    }
 
     return (
         <div style={styles.container}>
             <MenuBar></MenuBar>
             <h2>AI Model Settings</h2>
-            <p>Current AI Model: {aiModel}</p>
-            <select onChange={handleModelChange} value={aiModel} style={styles.select}>
+            <p>Current AI Model: <strong>{agent_model}</strong></p>
+            <select 
+                onChange={handleModelChange} 
+                value={agent_model} 
+                style={styles.select}
+            >
                 <option value="deepseek-r1:1.5b">DeepSeek R1</option>
-                <option value="gemma3:1b">Gemma 3</option>
+                <option value="gemma">Gemma 3</option>
                 <option value="mistral">Mistral</option>
-                <option value="llama3.3">Llama 3</option>
-            </select>
+                <option value="llama3.2">Llama 3</option>
+             </select>
         </div>
     );
 };

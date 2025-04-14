@@ -11,12 +11,14 @@ import ExistingChatPage from './existingChatScreen.js';
 import { LogUserProvider } from './contexts/context.js';
 import { ExistingChatProvider } from './contexts/existingChatContext';
 import InsertExcel from './InsertExcel.js';
+import { ModelProvider } from './contexts/modelPreference.js';
 // import ProtectedRoute from './ProtectedRoute';
 
 const App = () => {
   return (
     <ExistingChatProvider>
       <LogUserProvider>
+        <ModelProvider>
         <Router>
           <Routes>
             {/* Public Routes */}
@@ -54,6 +56,7 @@ const App = () => {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>
+        </ModelProvider>
       </LogUserProvider>
     </ExistingChatProvider>
   );
