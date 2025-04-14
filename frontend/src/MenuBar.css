@@ -23,6 +23,13 @@
 
 /* Add a color to the active/current link */
 .topnav a.active {
-    background-color: #020202;
+    background-color: #f90000;;
+    margin-left: 58.7%;
+    padding-left: 50px;
+    padding-right: 50px;
     color: white;
+}
+
+.logout {
+    padding-left: 50%;
 }

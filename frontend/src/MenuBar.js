@@ -10,6 +10,7 @@ const MenuBar = () => {
             <Link to="/infobank">Info Bank</Link>
             <Link to="/settings">Settings</Link>
             <Link to="/upload-excel">Upload Spreadsheet</Link>
+            <Link to="/" class="active">Logout</Link>
         </div>
     );
 };
