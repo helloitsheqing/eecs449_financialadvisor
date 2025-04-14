@@ -3,10 +3,12 @@ import React, { useContext, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import LogUserContext from './contexts/context.js';
+import ModelContext from './contexts/modelPreference.js';
 
 const ChatPage = () => {
     const navigate = useNavigate();
     const { username } = useContext(LogUserContext);
+    const { agent_model } = useContext(ModelContext)
     const [inputValue, setInputValue] = useState('');
     
     // Initialize messages state with empty array
@@ -34,7 +36,8 @@ const ChatPage = () => {
                 const response = await axios.post(`http://localhost:5001/chat/${username}`, {
                     message: inputValue,
                     // conversation_id: conversationId,
-                    username: username
+                    username: username, 
+                    agent_model: agent_model
                 }, {
                     withCredentials: true
                 });
